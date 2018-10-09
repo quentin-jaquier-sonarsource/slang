@@ -50,7 +50,6 @@ public class CheckList {
     DuplicatedFunctionImplementationCheck.class,
     FunctionCognitiveComplexityCheck.class,
     IdenticalConditionsCheck.class,
-    MatchWithoutElseCheck.class,
     OctalValuesCheck.class,
     RedundantParenthesesCheck.class,
     TooComplexExpressionCheck.class,
