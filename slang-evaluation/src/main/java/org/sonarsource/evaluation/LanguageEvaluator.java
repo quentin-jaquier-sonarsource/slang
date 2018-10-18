@@ -19,10 +19,31 @@
  */
 package org.sonarsource.evaluation;
 
-import org.junit.Test;
+import org.sonarsource.kotlin.converter.KotlinConverter;
+import org.sonarsource.ruby.converter.RubyConverter;
 import org.sonarsource.scala.converter.ScalaConverter;
+import org.sonarsource.slang.api.ASTConverter;
 
-public class ConverterEvaluatorTest {
+import java.io.IOException;
 
 
+public class LanguageEvaluator {
+
+  public static void main(String[] args) {
+    //Kotlin
+    evaluateLanguage("its\\sources\\kotlin", ".kt", new KotlinConverter());
+    //Ruby
+    evaluateLanguage("its\\sources\\ruby", ".rb", new RubyConverter());
+    //Scala
+    evaluateLanguage("its\\sources\\scala", ".scala", new ScalaConverter());
+  }
+
+  private static void evaluateLanguage(String testSourcesPath, String extension, ASTConverter converter) {
+    ConverterEvaluator evaluator = new ConverterEvaluator(converter, testSourcesPath, extension);
+    try {
+      evaluator.evaluate();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
 }
