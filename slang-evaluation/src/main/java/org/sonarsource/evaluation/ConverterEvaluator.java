@@ -19,8 +19,9 @@
  */
 package org.sonarsource.evaluation;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.sonarsource.slang.api.ASTConverter;
-import org.sonarsource.slang.api.NativeKind;
 import org.sonarsource.slang.api.ParseException;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.impl.NativeTreeImpl;
@@ -50,17 +51,21 @@ class ConverterEvaluator {
   private int nFiles = 0;
 
   private Map<String,Integer> natNodeType;
+  private Map<String,Integer> allChildNatNodeType;
+  private Set<String> leafs;
 
   ConverterEvaluator(ASTConverter converter, String sourceTestFilesFolder, String sourceExtension) {
     this.converter = converter;
     this.sourceTestFilesFolder = sourceTestFilesFolder;
     this.sourceExtension = sourceExtension;
     natNodeType = new HashMap<>();
+    allChildNatNodeType = new HashMap<>();
+    leafs = new HashSet<>();
   }
 
   void evaluate() throws IOException {
-    String fileName = "slang-evaluation\\src\\main\\output\\" + sourceExtension + "_evaluation.txt";
-    try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+    String fileName = "slang-evaluation\\src\\main\\output\\" + sourceExtension;
+    try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName + "_evaluation.txt"))) {
       try (Stream<Path> str = Files.walk(Paths.get(sourceTestFilesFolder))) {
         str.filter(p -> p.toString().endsWith(sourceExtension))
             .forEach(p -> {
@@ -76,25 +81,29 @@ class ConverterEvaluator {
       }
     }
 
-    try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName + "_native_nodes.csv"))) {
-      int totalNative = natNodeType.values().stream().mapToInt(Integer::intValue).sum();
+    writeMapToFile(natNodeType, fileName + "_native_nodes");
+    writeMapToFile(allChildNatNodeType, fileName + "_all_child_native_nodes");
+  }
 
-      Map<String,Integer> sorted = natNodeType
+  private void writeMapToFile(Map<String, Integer> map, String fileName) throws IOException {
+    try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName + ".csv"))) {
+      int totalNative = map.values().stream().mapToInt(Integer::intValue).sum();
+
+      Map<String,Integer> sorted = map
           .entrySet()
           .stream()
           .sorted(Collections.reverseOrder(comparingByValue()))
           .collect(
               toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
                   LinkedHashMap::new));
-      writer.write("Native node type, Number of occurrences, Percentage of native \n");
+
+      writer.write("Native node type, Number of occurrences, Percentage of native, Leafs\n");
       if(totalNative != 0){
         for (Map.Entry<String, Integer> e : sorted.entrySet()) {
-          writer.write(e.getKey() + "," + e.getValue() + ", " + (e.getValue() / (double)totalNative)*100 + "%" + "\n");
+          writer.write(e.getKey() + "," + e.getValue() + ", " + (e.getValue() / (double)totalNative)*100 + "%, " + leafs.contains(e.getKey()) + "\n");
         }
       }
     }
-
-
   }
 
   private void convertCode(Path p, BufferedWriter writer) throws IOException {
@@ -118,8 +127,8 @@ class ConverterEvaluator {
 
     convertedTree.descendants()
         .filter(t -> t instanceof NativeTreeImpl).forEach(n ->
-          natNodeType.merge(((NativeTreeImpl) n).nativeKind().toString(), 1, Integer::sum)
-        );
+        addToMaps(n));
+
     long nativeNodes = convertedTree.descendants()
         .filter(t -> t instanceof NativeTreeImpl).count();
 
@@ -127,6 +136,18 @@ class ConverterEvaluator {
       return 0.0;
     } else {
       return nativeNodes/(double)totalNodes;
+    }
+  }
+
+  private void addToMaps(Tree t) {
+    natNodeType.merge(((NativeTreeImpl) t).nativeKind().toString(), 1, Integer::sum);
+
+      if (t.descendants().allMatch(d -> d instanceof NativeTreeImpl)) {
+        String name = ((NativeTreeImpl) t).nativeKind().toString();
+        allChildNatNodeType.merge(name, 1, Integer::sum);
+        if(t.descendants().count() == 0) {
+          leafs.add(name);
+        }
     }
   }
 }
