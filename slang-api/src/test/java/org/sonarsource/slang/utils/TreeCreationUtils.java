@@ -19,6 +19,7 @@
  */
 package org.sonarsource.slang.utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.BlockTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.IdentifierTree;
+import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.IntegerLiteralTree;
 import org.sonarsource.slang.api.LiteralTree;
 import org.sonarsource.slang.api.LoopTree;
@@ -45,6 +47,7 @@ import org.sonarsource.slang.impl.BinaryExpressionTreeImpl;
 import org.sonarsource.slang.impl.BlockTreeImpl;
 import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
+import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.IntegerLiteralTreeImpl;
 import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
@@ -112,6 +115,12 @@ public class TreeCreationUtils {
     return assignment(AssignmentExpressionTree.Operator.EQUAL, leftOperand, rightOperand, textRange, tokens);
   }
 
+  public static BlockTree block(Tree body) {
+    List<Tree> l = new ArrayList<>();
+    l.add(body);
+    return block(l);
+  }
+
   public static BlockTree block(List<Tree> body) {
     return new BlockTreeImpl(null, body);
   }
@@ -138,6 +147,10 @@ public class TreeCreationUtils {
 
   public static NativeTree simpleNative(NativeKind kind, List<String> tokens, List<Tree> children) {
     return new NativeTreeImpl(metaData(tokens), kind, children);
+  }
+
+  public static IfTree simpleIfTree(Tree condition, Tree thenBranch, Tree elseBranch) {
+    return new IfTreeImpl(null, condition, thenBranch, elseBranch, null, null);
   }
 
   public static ModifierTree simpleModifier(ModifierTree.Kind kind) {

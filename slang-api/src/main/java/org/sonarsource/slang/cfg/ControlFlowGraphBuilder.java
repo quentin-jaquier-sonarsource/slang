@@ -73,9 +73,29 @@ class ControlFlowGraphBuilder {
   }
 
   private SlangCfgBlock build(Tree tree, SlangCfgBlock currentBlock) {
-    return null;
+    if(tree instanceof IfTree) {
+      return buildIfStatement((IfTree) tree, currentBlock);
+    } else {
+      currentBlock.addElement(tree);
+      return currentBlock;
+    }
   }
 
+
+  private SlangCfgBlock buildIfStatement(IfTree tree, SlangCfgBlock successor) {
+    SlangCfgBlock falseBlock = successor;
+    if (tree.elseBranch() != null) {
+      falseBlock = buildSubFlow(tree.elseBranch().children(), successor);
+    }
+    SlangCfgBlock trueBlock = buildSubFlow(tree.thenBranch().children(), successor);
+    SlangCfgBranchingBlock conditionBlock = createBranchingBlock(tree, trueBlock, falseBlock);
+    conditionBlock.addElement(tree.condition());
+    return conditionBlock;
+  }
+
+  private SlangCfgBlock buildSubFlow(List<Tree> subFlowTree, SlangCfgBlock successor) {
+    return build(subFlowTree, createSimpleBlock(successor));
+  }
 
   private SlangCfgBlock createSimpleBlock(SlangCfgBlock successor) {
     SlangCfgBlock block = new SlangCfgBlock(successor);

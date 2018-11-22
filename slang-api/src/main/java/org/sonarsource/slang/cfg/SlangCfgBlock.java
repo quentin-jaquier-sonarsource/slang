@@ -61,7 +61,7 @@ public class SlangCfgBlock implements CfgBlock {
 
   @Override
   public List<Tree> elements() {
-    return null;
+    return Collections.unmodifiableList(elements);
   }
 
   public void addElement(Tree element) {
