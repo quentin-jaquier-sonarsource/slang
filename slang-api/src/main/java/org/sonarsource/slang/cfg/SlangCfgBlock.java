@@ -1,19 +1,46 @@
 package org.sonarsource.slang.cfg;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.sonarsource.slang.api.Tree;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+import org.sonarsource.slang.api.Tree;
 
 public class SlangCfgBlock implements CfgBlock {
 
-  private Set<CfgBlock> predecessors = new HashSet<>();
-  private CfgBlock successor;
+  private Set<SlangCfgBlock> predecessors = new HashSet<>();
+  private Set<SlangCfgBlock> successors;
 
-  public SlangCfgBlock(CfgBlock successor) {
-    this.successor = successor;
+  private SlangCfgBlock syntacticSuccessor;
+
+  private LinkedList<Tree> elements = new LinkedList<>();
+
+  public SlangCfgBlock(Set<SlangCfgBlock> successors, @Nullable SlangCfgBlock syntacticSuccessor) {
+    this.successors = ImmutableSet.copyOf(successors);
+    this.syntacticSuccessor = syntacticSuccessor;
+  }
+
+  SlangCfgBlock(SlangCfgBlock successor, SlangCfgBlock syntacticSuccessor) {
+    this(ImmutableSet.of(successor), Preconditions.checkNotNull(syntacticSuccessor,
+        "Syntactic successor cannot be null"));
+  }
+
+  SlangCfgBlock(Set<SlangCfgBlock> successors) {
+    this(successors, null);
+  }
+
+  SlangCfgBlock(SlangCfgBlock successor) {
+    this(ImmutableSet.of(successor));
+  }
+
+  SlangCfgBlock() {
+    // needed by inheriting classes
   }
 
   @Override
@@ -22,8 +49,14 @@ public class SlangCfgBlock implements CfgBlock {
   }
 
   @Override
-  public Set<CfgBlock> successors() {
-    return ImmutableSet.of(successor);
+  public Set<? extends CfgBlock> successors() {
+    return successors;
+  }
+
+  @Nullable
+  @Override
+  public CfgBlock syntacticSuccessor() {
+    return syntacticSuccessor;
   }
 
   @Override
@@ -31,49 +64,48 @@ public class SlangCfgBlock implements CfgBlock {
     return null;
   }
 
-  /*
-  private Set<PhpCfgBlock> predecessors = new HashSet<>();
-  private PhpCfgBlock successor;
-   private LinkedList<Tree> elements = new LinkedList<>();
-   PhpCfgBlock(PhpCfgBlock successor) {
-    Preconditions.checkArgument(successor != null, "Successor cannot be null");
-    this.successor = successor;
-  }
-   PhpCfgBlock() {
-      // needed by inheriting classes
-  }
-   @Override
-  public Set<CfgBlock> predecessors() {
-    return Collections.unmodifiableSet(predecessors);
-  }
-   @Override
-  public Set<CfgBlock> successors() {
-    return ImmutableSet.of(successor);
-  }
-   @Override
-  public List<Tree> elements() {
-    return Collections.unmodifiableList(elements);
-  }
-   public void addElement(Tree element) {
+  public void addElement(Tree element) {
     Preconditions.checkArgument(element != null, "Cannot add a null element to a block");
     elements.addFirst(element);
   }
 
-  void replaceSuccessors(Map<PhpCfgBlock, PhpCfgBlock> replacements) {
-    this.successor = replacement(successor, replacements);
+  /**
+   * Replace successors based on a replacement map.
+   * This method is used when we remove empty blocks:
+   * we have to replace empty successors in the remaining blocks by non-empty successors.
+   */
+  void replaceSuccessors(Map<SlangCfgBlock, SlangCfgBlock> replacements) {
+    successors = successors.stream()
+        .map(successor -> replacement(successor, replacements))
+        .collect(ImmutableSet.toImmutableSet());
+    if (syntacticSuccessor != null) {
+      syntacticSuccessor = replacement(syntacticSuccessor, replacements);
+    }
   }
-  static PhpCfgBlock replacement(PhpCfgBlock successor, Map<PhpCfgBlock, PhpCfgBlock> replacements) {
-    PhpCfgBlock newSuccessor = replacements.get(successor);
+
+  /**
+   * Replace oldSucc with newSucc
+   */
+  void replaceSuccessor(SlangCfgBlock oldSucc, SlangCfgBlock newSucc) {
+    Map<SlangCfgBlock, SlangCfgBlock> map = new HashMap<>();
+    map.put(oldSucc, newSucc);
+    replaceSuccessors(map);
+  }
+
+  static SlangCfgBlock replacement(SlangCfgBlock successor, Map<SlangCfgBlock, SlangCfgBlock> replacements) {
+    SlangCfgBlock newSuccessor = replacements.get(successor);
     return newSuccessor == null ? successor : newSuccessor;
   }
-  void addPredecessor(PhpCfgBlock predecessor) {
+
+  void addPredecessor(SlangCfgBlock predecessor) {
     predecessors.add(predecessor);
   }
-  PhpCfgBlock skipEmptyBlocks() {
+
+  SlangCfgBlock skipEmptyBlocks() {
     Set<CfgBlock> skippedBlocks = new HashSet<>();
-    PhpCfgBlock block = this;
+    SlangCfgBlock block = this;
     while (block.successors().size() == 1 && block.elements().isEmpty()) {
-      PhpCfgBlock next = (PhpCfgBlock) block.successors().iterator().next();
+      SlangCfgBlock next = (SlangCfgBlock) block.successors().iterator().next();
       skippedBlocks.add(block);
       if (!skippedBlocks.contains(next)) {
         block = next;
@@ -83,5 +115,4 @@ public class SlangCfgBlock implements CfgBlock {
     }
     return block;
   }
-   */
 }

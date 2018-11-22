@@ -3,29 +3,27 @@ package org.sonarsource.slang.cfg;
 import java.util.Collections;
 import java.util.Set;
 import org.sonarsource.slang.api.BlockTree;
+import org.sonarsource.slang.api.FunctionDeclarationTree;
 
 public class ControlFlowGraph {
   private final CfgBlock start;
-  private final CfgBlock end;
-
+  private final SlangCfgBlock end;
   private final Set<CfgBlock> blocks;
 
-  ControlFlowGraph(Set<CfgBlock> blocks, CfgBlock start, CfgBlock end) {
+  ControlFlowGraph(Set<CfgBlock> blocks, CfgBlock start, SlangCfgBlock end) {
     this.start = start;
     this.end = end;
     this.blocks = blocks;
-    for (CfgBlock block : blocks) {
-      for (CfgBlock successor : block.successors()) {
-        ((CfgBlock) successor).addPredecessor(block);
-      }
-    }
   }
+
+  public static ControlFlowGraph build(FunctionDeclarationTree function) {
+    return build(function.body());
+  }
+
   public static ControlFlowGraph build(BlockTree body) {
-    return new ControlFlowGraphBuilder().createGraph(body);
+    return new ControlFlowGraphBuilder(body.statementOrExpressions()).getGraph();
   }
-  public static ControlFlowGraph build(ScriptTree scriptTree) {
-    return new ControlFlowGraphBuilder().createGraph(scriptTree);
-  }
+
   public CfgBlock start() {
     return start;
   }

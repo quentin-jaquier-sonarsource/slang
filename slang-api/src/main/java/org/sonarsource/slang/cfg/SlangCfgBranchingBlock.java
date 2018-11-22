@@ -3,16 +3,17 @@ package org.sonarsource.slang.cfg;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.sonarsource.slang.api.Tree;
 
 public class SlangCfgBranchingBlock extends SlangCfgBlock implements CfgBranchingBlock {
 
-  private CfgBlock trueSuccessor;
-  private CfgBlock falseSuccessor;
+  private SlangCfgBlock trueSuccessor;
+  private SlangCfgBlock falseSuccessor;
   private Tree branchingTree;
 
-  public SlangCfgBranchingBlock(Tree branchingTree, CfgBlock trueSuccessor, CfgBlock falseSuccessor) {
+  public SlangCfgBranchingBlock(Tree branchingTree, SlangCfgBlock trueSuccessor, SlangCfgBlock falseSuccessor) {
     this.trueSuccessor = trueSuccessor;
     this.falseSuccessor = falseSuccessor;
     this.branchingTree = branchingTree;
@@ -39,15 +40,10 @@ public class SlangCfgBranchingBlock extends SlangCfgBlock implements CfgBranchin
   }
 
 
-
-
-
-  /*
-
-
-   @Override
-  public void replaceSuccessors(Map<PhpCfgBlock, PhpCfgBlock> replacements) {
+  @Override
+  public void replaceSuccessors(Map<SlangCfgBlock, SlangCfgBlock> replacements) {
     this.trueSuccessor = replacement(this.trueSuccessor, replacements);
     this.falseSuccessor = replacement(this.falseSuccessor, replacements);
-  }*/
+  }
+
 }
