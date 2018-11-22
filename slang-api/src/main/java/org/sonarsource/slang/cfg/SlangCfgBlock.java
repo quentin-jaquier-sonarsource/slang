@@ -115,4 +115,17 @@ public class SlangCfgBlock implements CfgBlock {
     }
     return block;
   }
+
+  @Override
+  public String toString() {
+    if (elements.isEmpty()) {
+      return "empty";
+    }
+    StringBuilder builder = new StringBuilder();
+    for(Tree t: elements){
+      builder.append(t.getClass().getSimpleName());
+      builder.append("\\n");
+    }
+    return builder.toString();
+  }
 }
