@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.stream.Collectors;
 import org.checkerframework.checker.units.qual.C;
 import org.sonarsource.slang.api.BlockTree;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
@@ -97,12 +98,46 @@ class ControlFlowGraphBuilder {
       return buildReturnStatement((ReturnTree) tree, currentBlock);
     } else if(tree instanceof ThrowTree){
       return buildThrowStatement((ThrowTree) tree, currentBlock);
+    } else if(tree instanceof ExceptionHandlingTree) {
+      return buildExceptionHandling((ExceptionHandlingTree)tree, currentBlock);
     }
 
     else {
       currentBlock.addElement(tree);
       return currentBlock;
     }
+  }
+
+  private SlangCfgBlock buildExceptionHandling(ExceptionHandlingTree tree, SlangCfgBlock successor) {
+    SlangCfgBlock exitBlock = exitTargets.peek().exitBlock;
+    SlangCfgBlock finallyBlockEnd = createMultiSuccessorBlock(ImmutableSet.of(successor, exitBlock));
+    SlangCfgBlock finallyBlock;
+    if (tree.finallyBlock() != null) {
+      finallyBlock = build(tree.finallyBlock().children(), finallyBlockEnd);
+    } else {
+      finallyBlock = finallyBlockEnd;
+    }
+
+    List<SlangCfgBlock> catchBlocks = tree.catchBlocks().stream()
+        .map(catchBlockTree -> buildSubFlow(catchBlockTree.catchBlock(), finallyBlock))
+        .collect(Collectors.toList());
+
+    if (catchBlocks.isEmpty()) {
+      throwTargets.push(finallyBlock);
+    } else {
+      throwTargets.push(catchBlocks.get(0));
+    }
+    Set<SlangCfgBlock> bodySuccessors = new HashSet<>(catchBlocks);
+    bodySuccessors.add(finallyBlock);
+    SlangCfgBlock tryBodySuccessors = createMultiSuccessorBlock(bodySuccessors);
+    addBreakable(tryBodySuccessors, tryBodySuccessors);
+    exitTargets.push(new TryBodyEnd(tryBodySuccessors, finallyBlock));
+    SlangCfgBlock tryBodyStartingBlock = build(tree.tryBlock(), tryBodySuccessors);
+    throwTargets.pop();
+    exitTargets.pop();
+    removeBreakable();
+
+    return tryBodyStartingBlock;
   }
 
   private SlangCfgBlock buildThrowStatement(ThrowTree tree, SlangCfgBlock successor) {
