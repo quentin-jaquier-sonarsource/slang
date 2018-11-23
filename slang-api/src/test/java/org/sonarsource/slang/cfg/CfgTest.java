@@ -2,11 +2,13 @@ package org.sonarsource.slang.cfg;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.checkerframework.checker.signature.qual.Identifier;
 import org.junit.Test;
 import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.CatchTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.LoopTree;
+import org.sonarsource.slang.api.MatchCaseTree;
 import org.sonarsource.slang.api.Tree;
 
 import static org.junit.Assert.assertEquals;
@@ -15,6 +17,8 @@ import static org.sonarsource.slang.utils.TreeCreationUtils.binary;
 import static org.sonarsource.slang.utils.TreeCreationUtils.block;
 import static org.sonarsource.slang.utils.TreeCreationUtils.identifier;
 import static org.sonarsource.slang.utils.TreeCreationUtils.loop;
+import static org.sonarsource.slang.utils.TreeCreationUtils.matchCaseTree;
+import static org.sonarsource.slang.utils.TreeCreationUtils.matchTree;
 import static org.sonarsource.slang.utils.TreeCreationUtils.simpleFunction;
 import static org.sonarsource.slang.utils.TreeCreationUtils.simpleIfTree;
 import static org.sonarsource.slang.utils.TreeCreationUtils.simpleReturn;
@@ -244,6 +248,47 @@ public class CfgTest {
     ));
 
     body.add(assignment(identifier("x"), identifier("5")));
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(6, cfg.blocks().size());
+  }
+
+  @Test
+  public void testMatch() {
+     /*
+    x = 0;
+
+    match(aaa) {
+      case cond1:
+        a = 1;
+      case cond2:
+      {
+        b = 2;
+      }
+      case cond3:
+      c = 3;
+    }
+
+    d = 4;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("x"), identifier("0")));
+
+    List<MatchCaseTree> cases = new ArrayList<>();
+    cases.add(matchCaseTree(identifier("cond1"), assignment(identifier("a"), identifier("1"))));
+    List<Tree> caseBody = new ArrayList<>();
+    caseBody.add(assignment(identifier("b"), identifier("2")));
+    cases.add(matchCaseTree(identifier("cond2"), block(caseBody)));
+    cases.add(matchCaseTree(identifier("cond3"), assignment(identifier("c"), identifier("2"))));
+
+    body.add(matchTree(identifier("aaa"), cases));
+
+    body.add(assignment(identifier("d"), identifier("4")));
     FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
 
     ControlFlowGraph cfg = ControlFlowGraph.build(f);

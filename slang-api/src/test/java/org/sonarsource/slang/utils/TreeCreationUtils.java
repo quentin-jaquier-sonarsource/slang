@@ -35,6 +35,8 @@ import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.IntegerLiteralTree;
 import org.sonarsource.slang.api.LiteralTree;
 import org.sonarsource.slang.api.LoopTree;
+import org.sonarsource.slang.api.MatchCaseTree;
+import org.sonarsource.slang.api.MatchTree;
 import org.sonarsource.slang.api.ModifierTree;
 import org.sonarsource.slang.api.NativeKind;
 import org.sonarsource.slang.api.NativeTree;
@@ -57,6 +59,8 @@ import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.IntegerLiteralTreeImpl;
 import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
+import org.sonarsource.slang.impl.MatchCaseTreeImpl;
+import org.sonarsource.slang.impl.MatchTreeImpl;
 import org.sonarsource.slang.impl.ModifierTreeImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
 import org.sonarsource.slang.impl.ReturnTreeImpl;
@@ -161,6 +165,14 @@ public class TreeCreationUtils {
 
   public static ExceptionHandlingTree exceptionHandlingTree(Tree tryBlock, List<CatchTree> catchBlocks, Tree finallyBlock) {
     return new ExceptionHandlingTreeImpl(null, tryBlock, null, catchBlocks, finallyBlock);
+  }
+
+  public static MatchTree matchTree(Tree expression, List<MatchCaseTree> matchTreeCases) {
+    return new MatchTreeImpl(null, expression, matchTreeCases, null);
+  }
+
+  public static MatchCaseTree matchCaseTree(Tree expression, Tree body) {
+    return new MatchCaseTreeImpl(null, expression, body);
   }
 
   public static NativeTree simpleNative(NativeKind kind, List<Tree> children) {

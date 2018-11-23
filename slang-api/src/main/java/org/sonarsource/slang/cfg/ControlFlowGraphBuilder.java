@@ -21,6 +21,8 @@ import org.sonarsource.slang.api.BlockTree;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.LoopTree;
+import org.sonarsource.slang.api.MatchCaseTree;
+import org.sonarsource.slang.api.MatchTree;
 import org.sonarsource.slang.api.ReturnTree;
 import org.sonarsource.slang.api.ThrowTree;
 import org.sonarsource.slang.api.Tree;
@@ -90,7 +92,9 @@ class ControlFlowGraphBuilder {
   }
 
   private SlangCfgBlock build(Tree tree, SlangCfgBlock currentBlock) {
-    if(tree instanceof BlockTree){
+    if(tree instanceof MatchTree) {
+      return buildMatchTree((MatchTree) tree, currentBlock);
+    } else if(tree instanceof BlockTree) {
       return buildBlock((BlockTree)tree, currentBlock);
     } else if(tree instanceof IfTree) {
       return buildIfStatement((IfTree) tree, currentBlock);
@@ -108,6 +112,21 @@ class ControlFlowGraphBuilder {
       currentBlock.addElement(tree);
       return currentBlock;
     }
+  }
+
+  private SlangCfgBlock buildMatchTree(MatchTree tree, SlangCfgBlock successor) {
+    //We assume that only one case can be executed
+    Set<SlangCfgBlock> cases = new HashSet<>();
+
+    for (MatchCaseTree caseTree : Lists.reverse(tree.cases())) {
+      SlangCfgBlock cas = buildSubFlow(caseTree, successor);
+      cases.add(cas);
+    }
+
+    SlangCfgBlock condition = createMultiSuccessorBlock(cases);
+    condition.addElement(tree.expression());
+
+    return condition;
   }
 
   private SlangCfgBlock buildBlock(BlockTree block, SlangCfgBlock successor) {
@@ -220,7 +239,18 @@ class ControlFlowGraphBuilder {
   }
 
   private SlangCfgBlock buildSubFlow(Tree subFlowTree, SlangCfgBlock successor) {
-    if(subFlowTree instanceof BlockTree){
+    if(subFlowTree instanceof MatchCaseTree) {
+      //Add the expression and body in the same block
+      MatchCaseTree tree = (MatchCaseTree) subFlowTree;
+      List<Tree> expressionAndBody = new ArrayList<>();
+      if(tree.body() instanceof BlockTree) {
+        expressionAndBody.addAll(((BlockTree)tree.body()).statementOrExpressions());
+      } else {
+        expressionAndBody.add(tree.body());
+      }
+      expressionAndBody.add(tree.expression());
+      return buildSubFlow(expressionAndBody, successor);
+    } else if(subFlowTree instanceof BlockTree){
       return buildSubFlow(((BlockTree)subFlowTree).statementOrExpressions(), successor);
     } else {
       return build(subFlowTree, createSimpleBlock(successor));
