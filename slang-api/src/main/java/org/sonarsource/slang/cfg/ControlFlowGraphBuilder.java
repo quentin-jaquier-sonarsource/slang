@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,10 +15,10 @@ import java.util.Map;
 import java.util.Set;
 
 import java.util.stream.Collectors;
-import org.checkerframework.checker.units.qual.C;
 import org.sonarsource.slang.api.BlockTree;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.IfTree;
+import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.MatchCaseTree;
 import org.sonarsource.slang.api.MatchTree;
@@ -94,7 +93,9 @@ class ControlFlowGraphBuilder {
   private SlangCfgBlock build(Tree tree, SlangCfgBlock currentBlock) {
     if(tree instanceof MatchTree) {
       return buildMatchTree((MatchTree) tree, currentBlock);
-    } else if(tree instanceof BlockTree) {
+    } else if(tree instanceof JumpTree) {
+      return buildJumpTree((JumpTree)tree, currentBlock);
+    } else if(tree instanceof BlockTree){
       return buildBlock((BlockTree)tree, currentBlock);
     } else if(tree instanceof IfTree) {
       return buildIfStatement((IfTree) tree, currentBlock);
@@ -106,27 +107,61 @@ class ControlFlowGraphBuilder {
       return buildThrowStatement((ThrowTree) tree, currentBlock);
     } else if(tree instanceof ExceptionHandlingTree) {
       return buildExceptionHandling((ExceptionHandlingTree)tree, currentBlock);
-    }
-
-    else {
+    } else {
       currentBlock.addElement(tree);
       return currentBlock;
     }
   }
 
-  private SlangCfgBlock buildMatchTree(MatchTree tree, SlangCfgBlock successor) {
-    //We assume that only one case can be executed
-    Set<SlangCfgBlock> cases = new HashSet<>();
 
-    for (MatchCaseTree caseTree : Lists.reverse(tree.cases())) {
-      SlangCfgBlock cas = buildSubFlow(caseTree, successor);
-      cases.add(cas);
+  private SlangCfgBlock buildMatchTree(MatchTree tree, SlangCfgBlock successor){
+      //We assume that only one case can be executed
+      Set<SlangCfgBlock> cases = new HashSet<>();
+
+      for (MatchCaseTree caseTree : Lists.reverse(tree.cases())) {
+        SlangCfgBlock cas = buildSubFlow(caseTree, successor);
+        cases.add(cas);
+      }
+
+      SlangCfgBlock condition = createMultiSuccessorBlock(cases);
+      condition.addElement(tree.expression());
+
+      return condition;
     }
 
-    SlangCfgBlock condition = createMultiSuccessorBlock(cases);
-    condition.addElement(tree.expression());
+  private SlangCfgBlock buildJumpTree(JumpTree tree, SlangCfgBlock successor) {
+    switch (tree.kind()) {
+      case BREAK:
+        return buildBreakStatement(tree, successor);
+      case CONTINUE:
+        return buildContinueStatement(tree, successor);
+      default:
+        throw new UnsupportedOperationException("Unknown loop tree kind");
+    }
+  }
 
-    return condition;
+  private SlangCfgBlock buildBreakStatement(JumpTree tree, SlangCfgBlock successor) {
+    if(breakables.isEmpty()){
+      //Break with unknown parent (i.e. in switch); do nothing
+      successor.addElement(tree);
+      return successor;
+    } else {
+      SlangCfgBlock newBlock = createBlockWithSyntacticSuccessor(breakables.peek().breakTarget, successor);
+      newBlock.addElement(tree);
+      return newBlock;
+    }
+  }
+
+  private SlangCfgBlock buildContinueStatement(JumpTree tree, SlangCfgBlock successor) {
+    if(breakables.isEmpty()){
+      //Continue with unknown parent; do nothing
+      successor.addElement(tree);
+      return successor;
+    } else {
+      SlangCfgBlock newBlock = createBlockWithSyntacticSuccessor(breakables.peek().continueTarget, successor);
+      newBlock.addElement(tree);
+      return newBlock;
+    }
   }
 
   private SlangCfgBlock buildBlock(BlockTree block, SlangCfgBlock successor) {
@@ -204,9 +239,9 @@ class ControlFlowGraphBuilder {
 
     conditionBlock.addElement(tree.condition());
 
-    //addBreakable(successor, conditionBlock);
+    addBreakable(successor, conditionBlock);
     SlangCfgBlock loopBodyBlock = buildSubFlow(ImmutableList.of(tree.body()), conditionBlock);
-    //removeBreakable();
+    removeBreakable();
 
     linkToBody.setSuccessor(loopBodyBlock);
     return createSimpleBlock(loopBodyBlock);
@@ -215,9 +250,9 @@ class ControlFlowGraphBuilder {
   private SlangCfgBlock buildWhileStatement(LoopTree tree, SlangCfgBlock successor) {
     ForwardingBlock linkToCondition = createForwardingBlock();
 
-    //addBreakable(successor, linkToCondition);
+    addBreakable(successor, linkToCondition);
     SlangCfgBlock loopBodyBlock = buildSubFlow(tree.body(), linkToCondition);
-    //removeBreakable();
+    removeBreakable();
 
     SlangCfgBranchingBlock conditionBlock = createBranchingBlock(tree, loopBodyBlock, successor);
 
@@ -243,10 +278,12 @@ class ControlFlowGraphBuilder {
       //Add the expression and body in the same block
       MatchCaseTree tree = (MatchCaseTree) subFlowTree;
       List<Tree> expressionAndBody = new ArrayList<>();
-      if(tree.body() instanceof BlockTree) {
-        expressionAndBody.addAll(((BlockTree)tree.body()).statementOrExpressions());
-      } else {
-        expressionAndBody.add(tree.body());
+      if(tree.body() != null) {
+        if (tree.body() instanceof BlockTree) {
+          expressionAndBody.addAll(((BlockTree) tree.body()).statementOrExpressions());
+        } else {
+          expressionAndBody.add(tree.body());
+        }
       }
       expressionAndBody.add(tree.expression());
       return buildSubFlow(expressionAndBody, successor);

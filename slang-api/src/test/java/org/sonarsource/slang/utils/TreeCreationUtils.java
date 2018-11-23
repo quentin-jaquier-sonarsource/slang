@@ -33,6 +33,7 @@ import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.IntegerLiteralTree;
+import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LiteralTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.MatchCaseTree;
@@ -57,6 +58,7 @@ import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
 import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.IntegerLiteralTreeImpl;
+import org.sonarsource.slang.impl.JumpTreeImpl;
 import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
 import org.sonarsource.slang.impl.MatchCaseTreeImpl;
@@ -137,6 +139,10 @@ public class TreeCreationUtils {
 
   public static BlockTree block(List<Tree> body, TextRange textRange, String ... tokens) {
     return new BlockTreeImpl(metaData(textRange, tokens), body);
+  }
+
+  public static JumpTree jumpTree(JumpTree.JumpKind kind, IdentifierTree label) {
+    return new JumpTreeImpl(null, null, kind, label);
   }
 
   public static FunctionDeclarationTree simpleFunction(IdentifierTree name, BlockTree body) {

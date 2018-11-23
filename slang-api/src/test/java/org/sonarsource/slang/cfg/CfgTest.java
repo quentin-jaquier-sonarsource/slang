@@ -2,11 +2,11 @@ package org.sonarsource.slang.cfg;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.signature.qual.Identifier;
 import org.junit.Test;
 import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.CatchTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
+import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.MatchCaseTree;
 import org.sonarsource.slang.api.Tree;
@@ -16,6 +16,7 @@ import static org.sonarsource.slang.utils.TreeCreationUtils.assignment;
 import static org.sonarsource.slang.utils.TreeCreationUtils.binary;
 import static org.sonarsource.slang.utils.TreeCreationUtils.block;
 import static org.sonarsource.slang.utils.TreeCreationUtils.identifier;
+import static org.sonarsource.slang.utils.TreeCreationUtils.jumpTree;
 import static org.sonarsource.slang.utils.TreeCreationUtils.loop;
 import static org.sonarsource.slang.utils.TreeCreationUtils.matchCaseTree;
 import static org.sonarsource.slang.utils.TreeCreationUtils.matchTree;
@@ -154,6 +155,63 @@ public class CfgTest {
     assertEquals(5, cfg.blocks().size());
   }
 
+
+  @Test
+  public void testWhileBreak() {
+    ControlFlowGraph cfg = whileWithJumpCfg(JumpTree.JumpKind.BREAK);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(7, cfg.blocks().size());
+  }
+
+  @Test
+  public void testWhileContinue() {
+    ControlFlowGraph cfg = whileWithJumpCfg(JumpTree.JumpKind.CONTINUE);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(7, cfg.blocks().size());
+  }
+
+  private ControlFlowGraph whileWithJumpCfg(JumpTree.JumpKind kind) {
+    /*
+      a = 1;
+      while(n == 5) {
+        b = 2;
+        if(cond2) {
+          n = 3;
+          [$kind]; //(break or continue)
+        }
+        b = 2;
+      }
+      c = 3;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), identifier("1")));
+    body.add(loop(
+        binary(BinaryExpressionTree.Operator.EQUAL_TO, identifier("n"), identifier("5")), //Cond
+        block(
+            assignment(identifier("b"), identifier("2")),
+            simpleIfTree(
+                identifier("cond2"), //Cond
+                block(
+                    assignment(identifier("n"), identifier("3")), jumpTree(kind, null)), //Then block
+                null //Else block
+            ),
+            assignment(identifier("b"), identifier("2"))
+        ), //Body
+        LoopTree.LoopKind.WHILE,
+        "while"
+    ));
+
+    body.add(assignment(identifier("d"), identifier("3")));
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    return ControlFlowGraph.build(f);
+  }
+
   @Test
   public void testDoWhile() {
      /*
@@ -169,8 +227,8 @@ public class CfgTest {
 
     body.add(loop(
         identifier("cond"), //Cond
-        block(assignment(identifier("b"), identifier("2"))), //Then block
-        LoopTree.LoopKind.DOWHILE, //Else block
+        block(assignment(identifier("b"), identifier("2"))),
+        LoopTree.LoopKind.DOWHILE,
         "do"
     ));
 
@@ -236,10 +294,8 @@ public class CfgTest {
     tryBody.add(assignment(identifier("b"), identifier("2")));
     tryBody.add(throwTree(identifier("e")));
 
-    List<Tree> catchTreeBody = new ArrayList<>();
-    catchTreeBody.add(assignment(identifier("b"), identifier("2")));
     List<CatchTree> catchTrees = new ArrayList<>();
-    catchTrees.add(catchTree(identifier("f"), block(catchTreeBody)));
+    catchTrees.add(catchTree(identifier("f"), block(assignment(identifier("b"), identifier("2")))));
 
     body.add(exceptionHandlingTree(
         block(tryBody), //Cond
