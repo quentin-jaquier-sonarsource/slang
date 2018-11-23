@@ -2,9 +2,9 @@ package org.sonarsource.slang.cfg;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.signature.qual.Identifier;
 import org.junit.Test;
 import org.sonarsource.slang.api.BinaryExpressionTree;
+import org.sonarsource.slang.api.CatchTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.Tree;
@@ -17,7 +17,10 @@ import static org.sonarsource.slang.utils.TreeCreationUtils.identifier;
 import static org.sonarsource.slang.utils.TreeCreationUtils.loop;
 import static org.sonarsource.slang.utils.TreeCreationUtils.simpleFunction;
 import static org.sonarsource.slang.utils.TreeCreationUtils.simpleIfTree;
-
+import static org.sonarsource.slang.utils.TreeCreationUtils.simpleReturn;
+import static org.sonarsource.slang.utils.TreeCreationUtils.exceptionHandlingTree;
+import static org.sonarsource.slang.utils.TreeCreationUtils.catchTree;
+import static org.sonarsource.slang.utils.TreeCreationUtils.throwTree;
 
 public class CfgTest {
 
@@ -33,7 +36,6 @@ public class CfgTest {
     List<Tree> body = new ArrayList<>();
 
     body.add(assignment(identifier("a"), identifier("1")));
-
     body.add(simpleIfTree(
         identifier("cond"), //Cond
         block(assignment(identifier("b"), identifier("2"))), //Then block
@@ -53,6 +55,9 @@ public class CfgTest {
   public void testIfElse() {
      /*
       a = 1;
+      a = 1;
+      a = 1;
+
       if(cond) {
         b = 2;
       } else {
@@ -64,7 +69,6 @@ public class CfgTest {
     body.add(assignment(identifier("a"), identifier("1")));
     body.add(assignment(identifier("a"), identifier("1")));
     body.add(assignment(identifier("a"), identifier("1")));
-
     body.add(simpleIfTree(
         identifier("cond"), //Cond
         block(assignment(identifier("b"), identifier("2"))), //Then block
@@ -95,7 +99,6 @@ public class CfgTest {
     List<Tree> body = new ArrayList<>();
 
     body.add(assignment(identifier("a"), identifier("1")));
-
     body.add(simpleIfTree(
         identifier("cond1"), //Cond
         block(simpleIfTree(
@@ -130,7 +133,6 @@ public class CfgTest {
     List<Tree> body = new ArrayList<>();
 
     body.add(assignment(identifier("a"), identifier("1")));
-
     body.add(loop(
         binary(BinaryExpressionTree.Operator.EQUAL_TO, identifier("n"), identifier("5")), //Cond
         block(assignment(identifier("b"), identifier("2"))), //Then block
@@ -139,7 +141,6 @@ public class CfgTest {
     ));
 
     body.add(assignment(identifier("d"), identifier("3")));
-
     FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
 
     ControlFlowGraph cfg = ControlFlowGraph.build(f);
@@ -170,7 +171,6 @@ public class CfgTest {
     ));
 
     body.add(assignment(identifier("d"), identifier("3")));
-
     FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
 
     ControlFlowGraph cfg = ControlFlowGraph.build(f);
@@ -180,4 +180,76 @@ public class CfgTest {
     assertEquals(5, cfg.blocks().size());
   }
 
+  @Test
+  public void testReturn() {
+     /*
+       if(cond) {
+        return a;
+       } else {
+        b = 2;
+       };
+       c = 3;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(simpleIfTree(
+        identifier("cond"), //Cond
+        block(simpleReturn(identifier("a"))), //Then block
+        block(assignment(identifier("b"), identifier("2"))) //Else block
+    ));
+
+    body.add(assignment(identifier("c"), identifier("3")));
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(5, cfg.blocks().size());
+  }
+
+  @Test
+  public void testTryCatch() {
+     /*
+       a = 1;
+
+       try{
+        b = 2;
+        throw e;
+       } catch (f) {
+        c = 3:
+       } finally {
+        d = 4;
+        d = 4;
+       }
+       x = 5;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), identifier("1")));
+
+    List<Tree> tryBody = new ArrayList<>();
+    tryBody.add(assignment(identifier("b"), identifier("2")));
+    tryBody.add(throwTree(identifier("e")));
+
+    List<Tree> catchTreeBody = new ArrayList<>();
+    catchTreeBody.add(assignment(identifier("b"), identifier("2")));
+    List<CatchTree> catchTrees = new ArrayList<>();
+    catchTrees.add(catchTree(identifier("f"), block(catchTreeBody)));
+
+    body.add(exceptionHandlingTree(
+        block(tryBody), //Cond
+        catchTrees,
+        block(assignment(identifier("d"), identifier("4")), assignment(identifier("d"), identifier("4")))
+    ));
+
+    body.add(assignment(identifier("x"), identifier("5")));
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(6, cfg.blocks().size());
+  }
 }

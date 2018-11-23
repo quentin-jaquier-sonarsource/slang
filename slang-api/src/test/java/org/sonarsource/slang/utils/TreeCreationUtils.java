@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import org.sonarsource.slang.api.AssignmentExpressionTree;
 import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.BlockTree;
+import org.sonarsource.slang.api.CatchTree;
+import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.IfTree;
@@ -36,7 +38,9 @@ import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.ModifierTree;
 import org.sonarsource.slang.api.NativeKind;
 import org.sonarsource.slang.api.NativeTree;
+import org.sonarsource.slang.api.ReturnTree;
 import org.sonarsource.slang.api.TextRange;
+import org.sonarsource.slang.api.ThrowTree;
 import org.sonarsource.slang.api.Token;
 import org.sonarsource.slang.api.TopLevelTree;
 import org.sonarsource.slang.api.Tree;
@@ -45,6 +49,8 @@ import org.sonarsource.slang.api.VariableDeclarationTree;
 import org.sonarsource.slang.impl.AssignmentExpressionTreeImpl;
 import org.sonarsource.slang.impl.BinaryExpressionTreeImpl;
 import org.sonarsource.slang.impl.BlockTreeImpl;
+import org.sonarsource.slang.impl.CatchTreeImpl;
+import org.sonarsource.slang.impl.ExceptionHandlingTreeImpl;
 import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
 import org.sonarsource.slang.impl.IfTreeImpl;
@@ -53,7 +59,9 @@ import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
 import org.sonarsource.slang.impl.ModifierTreeImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
+import org.sonarsource.slang.impl.ReturnTreeImpl;
 import org.sonarsource.slang.impl.TextRangeImpl;
+import org.sonarsource.slang.impl.ThrowTreeImpl;
 import org.sonarsource.slang.impl.TokenImpl;
 import org.sonarsource.slang.impl.TopLevelTreeImpl;
 import org.sonarsource.slang.impl.VariableDeclarationTreeImpl;
@@ -115,10 +123,8 @@ public class TreeCreationUtils {
     return assignment(AssignmentExpressionTree.Operator.EQUAL, leftOperand, rightOperand, textRange, tokens);
   }
 
-  public static BlockTree block(Tree body) {
-    List<Tree> l = new ArrayList<>();
-    l.add(body);
-    return block(l);
+  public static BlockTree block(Tree ... body) {
+    return block(Arrays.asList(body));
   }
 
   public static BlockTree block(List<Tree> body) {
@@ -139,6 +145,22 @@ public class TreeCreationUtils {
 
   public static AssignmentExpressionTree assignment(AssignmentExpressionTree.Operator operator, Tree leftOperand, Tree rightOperand, TextRange textRange, String ... tokens) {
     return new AssignmentExpressionTreeImpl(metaData(textRange, tokens), operator, leftOperand, rightOperand);
+  }
+
+  public static ReturnTree simpleReturn(Tree body) {
+    return new ReturnTreeImpl(null, null, body);
+  }
+
+  public static ThrowTree throwTree(Tree body) {
+    return new ThrowTreeImpl(null, null, body);
+  }
+
+  public static CatchTree catchTree(Tree catchParameter, Tree catchBlock) {
+    return new CatchTreeImpl(null, catchParameter, catchBlock, null);
+  }
+
+  public static ExceptionHandlingTree exceptionHandlingTree(Tree tryBlock, List<CatchTree> catchBlocks, Tree finallyBlock) {
+    return new ExceptionHandlingTreeImpl(null, tryBlock, null, catchBlocks, finallyBlock);
   }
 
   public static NativeTree simpleNative(NativeKind kind, List<Tree> children) {
