@@ -90,7 +90,9 @@ class ControlFlowGraphBuilder {
   }
 
   private SlangCfgBlock build(Tree tree, SlangCfgBlock currentBlock) {
-    if(tree instanceof IfTree) {
+    if(tree instanceof BlockTree){
+      return buildBlock((BlockTree)tree, currentBlock);
+    } else if(tree instanceof IfTree) {
       return buildIfStatement((IfTree) tree, currentBlock);
     } else if(tree instanceof LoopTree) {
       return buildLoopStatement((LoopTree) tree, currentBlock);
@@ -106,6 +108,10 @@ class ControlFlowGraphBuilder {
       currentBlock.addElement(tree);
       return currentBlock;
     }
+  }
+
+  private SlangCfgBlock buildBlock(BlockTree block, SlangCfgBlock successor) {
+    return build(block.statementOrExpressions(), successor);
   }
 
   private SlangCfgBlock buildExceptionHandling(ExceptionHandlingTree tree, SlangCfgBlock successor) {
