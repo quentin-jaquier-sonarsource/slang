@@ -60,6 +60,7 @@ public class CheckList {
       IfConditionalAlwaysTrueOrFalseCheck.class,
       MatchCaseTooBigCheck.class,
       MatchWithoutElseCheck.class,
+      NullDereferenceBeliefStyleCheck.class,
       NestedMatchCheck.class,
       OctalValuesCheck.class,
       OneStatementPerLineCheck.class,

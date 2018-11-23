@@ -22,6 +22,7 @@ package org.sonarsource.scala.plugin;
 import java.util.List;
 import org.sonarsource.slang.checks.CheckList;
 import org.sonarsource.slang.checks.MatchWithoutElseCheck;
+import org.sonarsource.slang.checks.NullDereferenceBeliefStyleCheck;
 import org.sonarsource.slang.checks.OctalValuesCheck;
 import org.sonarsource.slang.checks.RedundantParenthesesCheck;
 import org.sonarsource.slang.checks.WrongAssignmentOperatorCheck;
@@ -36,7 +37,8 @@ public final class ScalaCheckList {
     MatchWithoutElseCheck.class,
     OctalValuesCheck.class,
     RedundantParenthesesCheck.class,
-    WrongAssignmentOperatorCheck.class
+    WrongAssignmentOperatorCheck.class,
+      NullDereferenceBeliefStyleCheck.class,
   };
 
   public static List<Class> checks() {

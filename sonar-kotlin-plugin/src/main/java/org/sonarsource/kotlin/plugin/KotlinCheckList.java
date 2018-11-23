@@ -22,6 +22,7 @@ package org.sonarsource.kotlin.plugin;
 import java.util.List;
 import org.sonarsource.slang.checks.CheckList;
 import org.sonarsource.slang.checks.MatchWithoutElseCheck;
+import org.sonarsource.slang.checks.NullDereferenceBeliefStyleCheck;
 import org.sonarsource.slang.checks.OctalValuesCheck;
 
 public final class KotlinCheckList {
@@ -34,7 +35,8 @@ public final class KotlinCheckList {
     // FP rate too high for now in Kotlin on 'when' statements due to enum/sealed class that have all branches covered
     MatchWithoutElseCheck.class,
     // Rule does not apply here as octal values do not exist in Kotlin
-    OctalValuesCheck.class
+    OctalValuesCheck.class,
+      NullDereferenceBeliefStyleCheck.class
   };
 
 

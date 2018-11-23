@@ -22,6 +22,7 @@ package org.sonarsource.ruby.plugin;
 import java.util.List;
 import org.sonarsource.slang.checks.BooleanLiteralCheck;
 import org.sonarsource.slang.checks.CheckList;
+import org.sonarsource.slang.checks.NullDereferenceBeliefStyleCheck;
 import org.sonarsource.slang.checks.UnusedPrivateMethodCheck;
 
 public final class RubyCheckList {
@@ -33,6 +34,7 @@ public final class RubyCheckList {
   private static final Class[] RUBY_CHECK_BLACK_LIST = {
     BooleanLiteralCheck.class,
     UnusedPrivateMethodCheck.class,
+      NullDereferenceBeliefStyleCheck.class
   };
 
   public static List<Class> checks() {
