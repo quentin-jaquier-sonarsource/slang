@@ -4,8 +4,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -15,8 +17,11 @@ import java.util.Set;
 
 import org.checkerframework.checker.units.qual.C;
 import org.sonarsource.slang.api.BlockTree;
+import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.LoopTree;
+import org.sonarsource.slang.api.ReturnTree;
+import org.sonarsource.slang.api.ThrowTree;
 import org.sonarsource.slang.api.Tree;
 
 class ControlFlowGraphBuilder {
@@ -28,11 +33,15 @@ class ControlFlowGraphBuilder {
 
   private final LinkedList<Breakable> breakables = new LinkedList<>();
 
+  private final Deque<SlangCfgBlock> throwTargets = new ArrayDeque<>();
+
+  private final Deque<TryBodyEnd> exitTargets = new LinkedList<>();
+
   private SlangCfgBlock start;
 
   public ControlFlowGraphBuilder(List<? extends Tree> items) {
-//    throwTargets.push(end);
-//    exitTargets.push(new TryBodyEnd(end, end));
+    throwTargets.push(end);
+    exitTargets.push(new TryBodyEnd(end, end));
     start = build(items, createSimpleBlock(end));
     removeEmptyBlocks();
     blocks.add(end);
@@ -84,10 +93,30 @@ class ControlFlowGraphBuilder {
       return buildIfStatement((IfTree) tree, currentBlock);
     } else if(tree instanceof LoopTree) {
       return buildLoopStatement((LoopTree) tree, currentBlock);
-    } else {
+    } else if(tree instanceof ReturnTree) {
+      return buildReturnStatement((ReturnTree) tree, currentBlock);
+    } else if(tree instanceof ThrowTree){
+      return buildThrowStatement((ThrowTree) tree, currentBlock);
+    }
+
+    else {
       currentBlock.addElement(tree);
       return currentBlock;
     }
+  }
+
+  private SlangCfgBlock buildThrowStatement(ThrowTree tree, SlangCfgBlock successor) {
+    // taking "latest" throw target is an estimation
+    // In real a matching `catch` clause should be found (by exception type)
+    SlangCfgBlock simpleBlock = createBlockWithSyntacticSuccessor(throwTargets.peek(), successor);
+    simpleBlock.addElement(tree);
+    return simpleBlock;
+  }
+
+  private SlangCfgBlock buildReturnStatement(ReturnTree tree, SlangCfgBlock successor) {
+    SlangCfgBlock simpleBlock = createBlockWithSyntacticSuccessor(exitTargets.peek().exitBlock, successor);
+    simpleBlock.addElement(tree);
+    return simpleBlock;
   }
 
   private SlangCfgBlock buildLoopStatement(LoopTree tree, SlangCfgBlock successor) {
