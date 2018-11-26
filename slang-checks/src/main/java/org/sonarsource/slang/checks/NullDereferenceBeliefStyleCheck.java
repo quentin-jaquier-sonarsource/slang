@@ -30,18 +30,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javafx.scene.control.cell.CheckBoxListCell;
 import org.sonar.check.Rule;
 import org.sonarsource.slang.api.AssignmentExpressionTree;
 import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.FunctionInvocationTree;
 import org.sonarsource.slang.api.IdentifierTree;
+import org.sonarsource.slang.api.LiteralTree;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.VariableDeclarationTree;
 import org.sonarsource.slang.cfg.CfgBlock;
 import org.sonarsource.slang.cfg.ControlFlowGraph;
-import org.sonarsource.slang.cfg.SlangCfgBlock;
 import org.sonarsource.slang.checks.api.CheckContext;
 import org.sonarsource.slang.checks.api.InitContext;
 import org.sonarsource.slang.checks.api.SlangCheck;
@@ -60,7 +59,7 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
           block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx));
         }
       }
-      });
+    });
 
   }
 
@@ -74,17 +73,17 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
   }
 
   private void processEqualTo(BinaryExpressionTree element, Set<String> out, CheckContext ctx) {
-    if(element.rightOperand() instanceof IdentifierTree && element.leftOperand() instanceof IdentifierTree) {
+    if(element.rightOperand() instanceof LiteralTree && element.leftOperand() instanceof IdentifierTree) {
 
       IdentifierTree lhs = (IdentifierTree) element.leftOperand();
-      IdentifierTree rhs = (IdentifierTree) element.rightOperand();
+      LiteralTree rhs = (LiteralTree) element.rightOperand();
 
       String pointerChecked;
 
-      if(rhs.name().equals("null")){
+      if(rhs.value().equals("null")){
         pointerChecked = lhs.name();
       } else if(lhs.name().equals("null")){
-        pointerChecked = rhs.name();
+        pointerChecked = rhs.value();
       } else {
         return;
       }
@@ -143,7 +142,6 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
 
         //Collect all predecessors out set
         List<Set<String>> preds = block.predecessors().stream().map(out::get).filter(Objects::nonNull).collect(Collectors.toList());
-       // block.exceptions().stream().map(out::get).filter(Objects::nonNull).forEach(preds::add);
 
         if(!preds.isEmpty()){
           Set<String> newBlockIn = new HashSet<>(preds.get(0));
