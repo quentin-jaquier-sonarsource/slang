@@ -59,6 +59,7 @@ import org.sonarsource.slang.impl.ClassDeclarationTreeImpl;
 import org.sonarsource.slang.impl.CommentImpl;
 import org.sonarsource.slang.impl.ExceptionHandlingTreeImpl;
 import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
+import org.sonarsource.slang.impl.FunctionInvocationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
 import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.ImportDeclarationTreeImpl;
@@ -321,14 +322,33 @@ public class SLangConverter implements ASTConverter {
 
     @Override
     public Tree visitMethodInvocation(SLangParser.MethodInvocationContext ctx) {
+      Tree methodSelectTree = null;
+      SLangParser.MethodSelectContext methodSelect = ctx.methodSelect();
+      IdentifierTree name = (IdentifierTree) visit(ctx.methodName());
       SLangParser.ArgumentListContext argumentListContext = ctx.argumentList();
-      List<Tree> children = new ArrayList<>();
-      children.add(visit(ctx.methodName()));
+
+      if(methodSelect != null){
+        methodSelectTree = visit(methodSelect);
+      }
+      List<Tree> args = new ArrayList<>();
       if (argumentListContext != null) {
-        children.addAll(list(argumentListContext.statement()));
+        args.addAll(list(argumentListContext.statement()));
       }
 
-      return new NativeTreeImpl(meta(ctx), new SNativeKind(ctx), children);
+      return new FunctionInvocationTreeImpl(meta(ctx), methodSelectTree, args, name);
+    }
+
+    @Override
+    public Tree visitMethodSelect(SLangParser.MethodSelectContext ctx) {
+      List<SLangParser.IdentifierContext> identifiers = ctx.identifier();
+      if(identifiers.size() == 1){
+        return visit(identifiers.get(0));
+      } else {
+        // Dotted expression
+        List<Tree> children = new ArrayList<>();
+        children.addAll(list(ctx.identifier()));
+        return new NativeTreeImpl(meta(ctx), new SNativeKind(ctx), children);
+      }
     }
 
     @Override

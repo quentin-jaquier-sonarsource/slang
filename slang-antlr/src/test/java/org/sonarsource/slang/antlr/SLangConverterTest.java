@@ -33,6 +33,7 @@ import org.sonarsource.slang.api.ClassDeclarationTree;
 import org.sonarsource.slang.api.Comment;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
+import org.sonarsource.slang.api.FunctionInvocationTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.ImportDeclarationTree;
@@ -585,6 +586,11 @@ public class SLangConverterTest {
   @Test
   public void methodInvocations() {
     Tree functionInvocationNoArgument = converter.parse("function();");
+    assertTree(functionInvocationNoArgument.children().get(0)).isInstanceOf(FunctionInvocationTree.class);
+
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree) functionInvocationNoArgument.children().get(0);
+    assertThat(functionInvocationTree.methodSelect()).isNull();
+
     assertTree(functionInvocationNoArgument).isEquivalentTo(functionInvocationNoArgument);
     assertTree(functionInvocationNoArgument).isEquivalentTo(converter.parse("function();"));
     assertTree(functionInvocationNoArgument).isNotEquivalentTo(converter.parse("function2();"));
@@ -595,6 +601,25 @@ public class SLangConverterTest {
 
     assertThat(functionInvocationNoArgument.descendants()
       .anyMatch(e -> e instanceof IdentifierTree && ((IdentifierTree) e).name().equals("function"))).isTrue();
+  }
+
+  @Test
+  public void methodSelectInvocations() {
+    Tree functionInvocationNoArgument = converter.parse("A.function();");
+    assertTree(functionInvocationNoArgument.children().get(0)).isInstanceOf(FunctionInvocationTree.class);
+
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree) functionInvocationNoArgument.children().get(0);
+
+    assertThat(functionInvocationTree.methodName().name()).isEqualTo("function");
+    assertThat(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(IdentifierTree.class);
+    assertThat(((IdentifierTree)functionInvocationTree.methodSelect()).name()).isEqualTo("A");
+
+    assertTree(functionInvocationNoArgument).isEquivalentTo(functionInvocationNoArgument);
+    assertTree(functionInvocationNoArgument).isNotEquivalentTo(converter.parse("function();"));
+
+    assertThat(functionInvocationNoArgument.descendants()
+        .anyMatch(e -> e instanceof IdentifierTree && ((IdentifierTree) e).name().equals("function"))).isTrue();
   }
 
   @Test

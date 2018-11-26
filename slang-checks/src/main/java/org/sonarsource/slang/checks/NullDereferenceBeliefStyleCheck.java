@@ -1,3 +1,22 @@
+/*
+ * SonarSource SLang
+ * Copyright (C) 2009-2018 SonarSource SA
+ * mailto:info AT sonarsource DOT com
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package org.sonarsource.slang.checks;
 
 import com.google.common.collect.ImmutableSet;
@@ -12,9 +31,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.scene.control.cell.CheckBoxListCell;
+import org.sonar.check.Rule;
 import org.sonarsource.slang.api.AssignmentExpressionTree;
 import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
+import org.sonarsource.slang.api.FunctionInvocationTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.VariableDeclarationTree;
@@ -25,6 +46,7 @@ import org.sonarsource.slang.checks.api.CheckContext;
 import org.sonarsource.slang.checks.api.InitContext;
 import org.sonarsource.slang.checks.api.SlangCheck;
 
+@Rule(key = "S12345678")
 public class NullDereferenceBeliefStyleCheck implements SlangCheck {
 
   @Override
@@ -38,7 +60,7 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
           block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx));
         }
       }
-    });
+      });
 
   }
 
@@ -150,9 +172,9 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       for (Tree element : block.elements()) {
         if(element instanceof AssignmentExpressionTree){
           processAssignment((AssignmentExpressionTree) element, blockKill, blockGen);
-        }
-        //else if(element instanceof MethodInvocationTree) TODO
-        else if(element instanceof VariableDeclarationTree){
+        } else if(element instanceof FunctionInvocationTree){
+          processMethodInvocation((FunctionInvocationTree) element, blockGen);
+        } else if(element instanceof VariableDeclarationTree){
           processVariable(((VariableDeclarationTree) element).identifier(), blockKill, blockGen);
         }
       }
@@ -163,13 +185,10 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       blockGen.remove(element.identifier());
     }
 
-    /* TODO
-    private void processMethodInvocation(MethodInvocationTree element, Set<String> blockGen) {
-      if(element.methodSelect().is(Tree.Kind.MEMBER_SELECT)) {
-        MemberSelectExpressionTree methodSelect = (MemberSelectExpressionTree)element.methodSelect();
-        processPointerUse(methodSelect.expression(), blockGen);
-      }
-    }*/
+    private void processMethodInvocation(FunctionInvocationTree element, Set<String> blockGen) {
+      //TODO: Check if it is a identifier here
+      processPointerUse(element.methodSelect(), blockGen);
+    }
 
     private void processPointerUse(Tree element, Set<String> blockGen) {
       if(element instanceof IdentifierTree) {
