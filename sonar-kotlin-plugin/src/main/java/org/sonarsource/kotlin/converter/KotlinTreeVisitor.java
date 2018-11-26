@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.psi.KtBinaryExpression;
 import org.jetbrains.kotlin.psi.KtBlockExpression;
 import org.jetbrains.kotlin.psi.KtBreakExpression;
+import org.jetbrains.kotlin.psi.KtCallExpression;
 import org.jetbrains.kotlin.psi.KtCatchClause;
 import org.jetbrains.kotlin.psi.KtClass;
 import org.jetbrains.kotlin.psi.KtConstantExpression;
@@ -51,6 +52,7 @@ import org.jetbrains.kotlin.psi.KtConstructor;
 import org.jetbrains.kotlin.psi.KtContinueExpression;
 import org.jetbrains.kotlin.psi.KtDestructuringDeclarationEntry;
 import org.jetbrains.kotlin.psi.KtDoWhileExpression;
+import org.jetbrains.kotlin.psi.KtDotQualifiedExpression;
 import org.jetbrains.kotlin.psi.KtEscapeStringTemplateEntry;
 import org.jetbrains.kotlin.psi.KtExpressionWithLabel;
 import org.jetbrains.kotlin.psi.KtFile;
@@ -107,6 +109,7 @@ import org.sonarsource.slang.impl.CatchTreeImpl;
 import org.sonarsource.slang.impl.ClassDeclarationTreeImpl;
 import org.sonarsource.slang.impl.ExceptionHandlingTreeImpl;
 import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
+import org.sonarsource.slang.impl.FunctionInvocationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
 import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.ImportDeclarationTreeImpl;
@@ -251,9 +254,26 @@ class KotlinTreeVisitor {
       return createReturnTree(metaData, (KtReturnExpression) element);
     } else if (element instanceof KtThrowExpression) {
       return createThrowTree(metaData, (KtThrowExpression) element);
+    } else if(element instanceof KtDotQualifiedExpression) {
+      return createFunctionInvocationTree(metaData, (KtDotQualifiedExpression) element);
     } else {
       return convertElementToNative(element, metaData);
     }
+  }
+
+  private Tree createFunctionInvocationTree(TreeMetaData metaData, KtDotQualifiedExpression ktDotQualifiedExpression) {
+    if(ktDotQualifiedExpression.getSelectorExpression() instanceof KtCallExpression) {
+      KtCallExpression callExpression = (KtCallExpression)ktDotQualifiedExpression.getSelectorExpression();
+      Tree methodSelect = convertElementToSlangAST(ktDotQualifiedExpression.getReceiverExpression(), metaData);
+      List<Tree> args = list(callExpression.getTypeArguments().stream());
+
+      if(callExpression.getCalleeExpression() instanceof KtNameReferenceExpression){
+        IdentifierTree name = (IdentifierTree) convertElementToSlangAST(callExpression.getCalleeExpression(), metaData);
+        return new FunctionInvocationTreeImpl(metaData, methodSelect, args, name);
+      }
+    }
+
+    return convertElementToNative(ktDotQualifiedExpression, metaData);
   }
 
   private Tree createThrowTree(TreeMetaData metaData, KtThrowExpression ktThrowExpression) {

@@ -32,6 +32,7 @@ import org.sonarsource.slang.api.ClassDeclarationTree;
 import org.sonarsource.slang.api.Comment;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
+import org.sonarsource.slang.api.FunctionInvocationTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.ImportDeclarationTree;
@@ -400,8 +401,30 @@ public class KotlinConverterTest {
 
   @Test
   public void testFunctionInvocation() {
-    Tree tree = kotlinStatement("foo(\"Hello world!\")");
+    Tree tree = kotlinStatement("A.foo()");
+    assertThat(tree).isInstanceOf(FunctionInvocationTree.class);
+
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree)tree;
+    assertTree(functionInvocationTree.methodName()).isIdentifier("foo");
+    assertTree(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isIdentifier("A");
+  }
+
+  @Test
+  public void testFunctionInvocation2() {
+    Tree tree = kotlinStatement("foo()");
     assertThat(tree).isInstanceOf(NativeTree.class);
+  }
+  
+  @Test
+  public void testFunctionInvocation3() {
+    Tree tree = kotlinStatement("A.B.foo()");
+    assertThat(tree).isInstanceOf(FunctionInvocationTree.class);
+
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree)tree;
+    assertTree(functionInvocationTree.methodName()).isIdentifier("foo");
+    assertTree(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(NativeTree.class);
   }
 
   @Test
