@@ -19,7 +19,9 @@
  */
 package org.sonarsource.slang.cfg;
 
+import com.google.common.collect.Lists;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import org.sonarsource.slang.api.BlockTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
@@ -27,9 +29,9 @@ import org.sonarsource.slang.api.FunctionDeclarationTree;
 public class ControlFlowGraph {
   private final CfgBlock start;
   private final SlangCfgBlock end;
-  private final Set<CfgBlock> blocks;
+  private final List<CfgBlock> blocks;
 
-  ControlFlowGraph(Set<CfgBlock> blocks, CfgBlock start, SlangCfgBlock end) {
+  ControlFlowGraph(List<CfgBlock> blocks, CfgBlock start, SlangCfgBlock end) {
     this.start = start;
     this.end = end;
     this.blocks = blocks;
@@ -52,8 +54,8 @@ public class ControlFlowGraph {
   /**
    * Includes start and end blocks
    */
-  public Set<CfgBlock> blocks() {
-    return Collections.unmodifiableSet(blocks);
+  public List<CfgBlock> blocks() {
+    return Collections.unmodifiableList(Lists.reverse(blocks));
   }
 
 

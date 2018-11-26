@@ -47,7 +47,7 @@ import org.sonarsource.slang.api.Tree;
 
 class ControlFlowGraphBuilder {
 
-  private final Set<SlangCfgBlock> blocks = new HashSet<>();
+  private final List<SlangCfgBlock> blocks = new ArrayList<>();
   private final SlangCfgBlock end = new SlangCfgEndBlock();
 
   private CfgBlock currentBlock = createSimpleBlock(end);
@@ -71,7 +71,7 @@ class ControlFlowGraphBuilder {
   }
 
   ControlFlowGraph getGraph() {
-    return new ControlFlowGraph(ImmutableSet.copyOf(blocks), start, end);
+    return new ControlFlowGraph(ImmutableList.copyOf(blocks), start, end);
   }
 
   private void computePredecessors() {
