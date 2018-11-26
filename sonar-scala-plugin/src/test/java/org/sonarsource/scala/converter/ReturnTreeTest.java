@@ -20,6 +20,7 @@
 package org.sonarsource.scala.converter;
 
 import org.junit.Test;
+import org.sonarsource.slang.api.FunctionInvocationTree;
 import org.sonarsource.slang.api.NativeTree;
 import org.sonarsource.slang.api.ReturnTree;
 
@@ -36,7 +37,7 @@ public class ReturnTreeTest extends AbstractScalaConverterTest {
 
     tree = (ReturnTree) scalaStatement("return foo()");
     assertThat(tree.keyword().text()).isEqualTo("return");
-    assertThat(tree.body()).isInstanceOf(NativeTree.class);
+    assertThat(tree.body()).isInstanceOf(FunctionInvocationTree.class);
   }
 
   @Test

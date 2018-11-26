@@ -37,8 +37,7 @@ public final class ScalaCheckList {
     MatchWithoutElseCheck.class,
     OctalValuesCheck.class,
     RedundantParenthesesCheck.class,
-    WrongAssignmentOperatorCheck.class,
-      NullDereferenceBeliefStyleCheck.class,
+    WrongAssignmentOperatorCheck.class
   };
 
   public static List<Class> checks() {
