@@ -35,8 +35,7 @@ public final class KotlinCheckList {
     // FP rate too high for now in Kotlin on 'when' statements due to enum/sealed class that have all branches covered
     MatchWithoutElseCheck.class,
     // Rule does not apply here as octal values do not exist in Kotlin
-    OctalValuesCheck.class,
-      NullDereferenceBeliefStyleCheck.class
+    OctalValuesCheck.class
   };
 
 
