@@ -41,6 +41,7 @@ import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.MatchCaseTree;
 import org.sonarsource.slang.api.MatchTree;
+import org.sonarsource.slang.api.NativeTree;
 import org.sonarsource.slang.api.ReturnTree;
 import org.sonarsource.slang.api.ThrowTree;
 import org.sonarsource.slang.api.Tree;
@@ -126,6 +127,14 @@ class ControlFlowGraphBuilder {
       return buildThrowStatement((ThrowTree) tree, currentBlock);
     } else if(tree instanceof ExceptionHandlingTree) {
       return buildExceptionHandling((ExceptionHandlingTree)tree, currentBlock);
+    } else if(tree instanceof NativeTree) {
+      if(tree.children().isEmpty()){
+        currentBlock.addElement(tree);
+      } else {
+        //Add the child independently
+        build(tree.children(), currentBlock);
+      }
+      return currentBlock;
     } else {
       if(tree != null) {
         currentBlock.addElement(tree);

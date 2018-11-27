@@ -181,6 +181,10 @@ public class TreeCreationUtils {
     return new MatchCaseTreeImpl(null, expression, body);
   }
 
+  public static NativeTree simpleNative(NativeKind kind, Tree ... children) {
+    return simpleNative(kind, Arrays.asList(children));
+  }
+
   public static NativeTree simpleNative(NativeKind kind, List<Tree> children) {
     return new NativeTreeImpl(null, kind, children);
   }

@@ -41,6 +41,7 @@ import static org.sonarsource.slang.utils.TreeCreationUtils.matchCaseTree;
 import static org.sonarsource.slang.utils.TreeCreationUtils.matchTree;
 import static org.sonarsource.slang.utils.TreeCreationUtils.simpleFunction;
 import static org.sonarsource.slang.utils.TreeCreationUtils.simpleIfTree;
+import static org.sonarsource.slang.utils.TreeCreationUtils.simpleNative;
 import static org.sonarsource.slang.utils.TreeCreationUtils.simpleReturn;
 import static org.sonarsource.slang.utils.TreeCreationUtils.exceptionHandlingTree;
 import static org.sonarsource.slang.utils.TreeCreationUtils.catchTree;
@@ -295,8 +296,10 @@ public class CfgTest {
        a = 1;
 
        try{
+        if(cond) {
+          throw e;
+        }
         b = 2;
-        throw e;
        } catch (f) {
         c = 3:
        } finally {
@@ -310,8 +313,14 @@ public class CfgTest {
     body.add(assignment(identifier("a"), identifier("1")));
 
     List<Tree> tryBody = new ArrayList<>();
+
+    tryBody.add(simpleIfTree(
+        identifier("cond2"), //Cond
+        block(
+            throwTree(identifier("e"))), //Then block
+        null //Else block
+    ));
     tryBody.add(assignment(identifier("b"), identifier("2")));
-    tryBody.add(throwTree(identifier("e")));
 
     List<CatchTree> catchTrees = new ArrayList<>();
     catchTrees.add(catchTree(identifier("f"), block(assignment(identifier("b"), identifier("2")))));
@@ -329,7 +338,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(6, cfg.blocks().size());
+    assertEquals(7, cfg.blocks().size());
   }
 
   @Test
@@ -371,5 +380,34 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(6, cfg.blocks().size());
+  }
+
+  @Test
+  public void testTreeWithNative() {
+     /*
+      a = 1;
+      if(cond) {
+        [Native]{
+        b = 2
+        b = 2};
+      }
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), identifier("1")));
+    body.add(simpleIfTree(
+        identifier("cond"), //Cond
+
+        block(simpleNative(null, assignment(identifier("b"), identifier("2")),assignment(identifier("b"), identifier("2")))), //Then block
+        null //Else block
+    ));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(3, cfg.blocks().size());
   }
 }
