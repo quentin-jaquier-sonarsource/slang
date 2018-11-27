@@ -37,6 +37,7 @@ import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.FunctionInvocationTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.LiteralTree;
+import org.sonarsource.slang.api.NativeTree;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.VariableDeclarationTree;
 import org.sonarsource.slang.cfg.CfgBlock;
@@ -60,7 +61,6 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         }
       }
     });
-
   }
 
   private void checkElement(Tree element, Set<String> out, CheckContext ctx) {
@@ -73,9 +73,12 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
   }
 
   private void processEqualTo(BinaryExpressionTree element, Set<String> out, CheckContext ctx) {
-    if(element.rightOperand() instanceof LiteralTree && element.leftOperand() instanceof IdentifierTree) {
+    if(element.rightOperand() instanceof LiteralTree) {
+      IdentifierTree lhs = NullTracking.getIdentifierIfPresent(element.leftOperand());
+      if(lhs == null){
+        return;
+      }
 
-      IdentifierTree lhs = (IdentifierTree) element.leftOperand();
       LiteralTree rhs = (LiteralTree) element.rightOperand();
 
       String pointerChecked;
@@ -189,17 +192,18 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
     }
 
     private void processPointerUse(Tree element, Set<String> blockGen) {
-      if(element instanceof IdentifierTree) {
-        String name = ((IdentifierTree)element).name();
+      IdentifierTree id = getIdentifierIfPresent(element);
+      if(id != null) {
+        String name = id.name();
         //TODO: Eventuelly check for field here
         blockGen.add(name);
       }
     }
 
     private void processAssignment(AssignmentExpressionTree element, Set<String> blockKill, Set<String> blockGen) {
-      Tree lhs = element.leftHandSide();
-      if (lhs instanceof IdentifierTree) {
-        String name = ((IdentifierTree) lhs).name();
+      IdentifierTree lhs = getIdentifierIfPresent(element.leftHandSide());
+      if (lhs != null) {
+        String name = lhs.name();
         //TODO: Eventuelly check for field here
         //if we see an assignment, we remove all previously used  pointer (we don't know anything for them anymore)
         blockKill.add(name);
@@ -207,5 +211,17 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       }
     }
 
+    private static IdentifierTree getIdentifierIfPresent(Tree tree){
+      if(tree instanceof IdentifierTree) {
+        return (IdentifierTree) tree;
+      } else if(tree instanceof NativeTree) {
+        //If a native surround the identifier.
+        List<Tree> children = tree.children();
+        if(children.size() == 1 && children.get(0) instanceof IdentifierTree){
+          return (IdentifierTree) children.get(0);
+        }
+      }
+      return null;
+    }
   }
 }
