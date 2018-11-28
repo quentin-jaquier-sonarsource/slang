@@ -1,0 +1,16 @@
+{
+  "title": "Null Deref, belief style",
+  "type": "CODE_SMELL",
+  "status": "ready",
+  "remediation": {
+    "func": "Constant\/Issue",
+    "constantCost": "1min"
+  },
+  "tags": [
+
+  ],
+  "defaultSeverity": "Minor",
+  "ruleSpecification": "RSPEC-4663",
+  "sqKey": "S12345678",
+  "scope": "Main"
+}
