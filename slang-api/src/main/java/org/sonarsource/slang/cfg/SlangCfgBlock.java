@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.Tree;
 
 public class SlangCfgBlock implements CfgBlock {
@@ -39,6 +40,8 @@ public class SlangCfgBlock implements CfgBlock {
   private SlangCfgBlock syntacticSuccessor;
 
   private LinkedList<Tree> elements = new LinkedList<>();
+
+  private boolean reliable = true;
 
   public SlangCfgBlock(Set<SlangCfgBlock> successors, @Nullable SlangCfgBlock syntacticSuccessor) {
     this.successors = ImmutableSet.copyOf(successors);
@@ -81,6 +84,16 @@ public class SlangCfgBlock implements CfgBlock {
   @Override
   public List<Tree> elements() {
     return Collections.unmodifiableList(elements);
+  }
+
+  @Override
+  public void notReliable() {
+    reliable = false;
+  }
+
+  @Override
+  public boolean isReliable() {
+    return reliable;
   }
 
   public void addElement(Tree element) {
@@ -143,8 +156,25 @@ public class SlangCfgBlock implements CfgBlock {
     StringBuilder builder = new StringBuilder();
     for(Tree t: elements){
       builder.append(t.getClass().getSimpleName());
+      builder.append("{");
+      builder.append(getIds(t));
+      builder.append("}");
       builder.append("\\n");
     }
+    return builder.toString().replace("\"", "'");
+  }
+
+  private String getIds(Tree t) {
+    StringBuilder builder = new StringBuilder();
+
+    t.descendants().filter(d -> d instanceof IdentifierTree)
+        .map(IdentifierTree.class::cast)
+        .forEach(id -> builder.append(id.name() + ", "));
+
+    if(t instanceof IdentifierTree){
+      builder.append(((IdentifierTree) t).name() + ", ");
+    }
+
     return builder.toString();
   }
 }

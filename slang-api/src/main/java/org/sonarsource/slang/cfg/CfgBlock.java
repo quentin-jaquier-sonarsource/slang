@@ -42,4 +42,8 @@ public interface CfgBlock {
   CfgBlock syntacticSuccessor();
 
   List<Tree> elements();
+
+  boolean isReliable();
+
+  void notReliable();
 }

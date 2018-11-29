@@ -30,11 +30,13 @@ public class ControlFlowGraph {
   private final CfgBlock start;
   private final SlangCfgBlock end;
   private final List<CfgBlock> blocks;
+  private final boolean reliable;
 
-  ControlFlowGraph(List<CfgBlock> blocks, CfgBlock start, SlangCfgBlock end) {
+  ControlFlowGraph(List<CfgBlock> blocks, CfgBlock start, SlangCfgBlock end, boolean reliable) {
     this.start = start;
     this.end = end;
     this.blocks = blocks;
+    this.reliable = reliable;
   }
 
   public static ControlFlowGraph build(FunctionDeclarationTree function) {
@@ -58,6 +60,7 @@ public class ControlFlowGraph {
     return Collections.unmodifiableList(Lists.reverse(blocks));
   }
 
-
-
+  public boolean isReliable() {
+    return reliable;
+  }
 }

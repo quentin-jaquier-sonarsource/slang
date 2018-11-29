@@ -61,6 +61,10 @@ class ControlFlowGraphBuilder {
 
   private SlangCfgBlock start;
 
+  private boolean reliable = true;
+
+  private boolean reliableSubFlow = true;
+
   public ControlFlowGraphBuilder(List<? extends Tree> items) {
     throwTargets.push(end);
     exitTargets.push(new TryBodyEnd(end, end));
@@ -72,7 +76,7 @@ class ControlFlowGraphBuilder {
   }
 
   ControlFlowGraph getGraph() {
-    return new ControlFlowGraph(ImmutableList.copyOf(blocks), start, end);
+    return new ControlFlowGraph(ImmutableList.copyOf(blocks), start, end, reliable);
   }
 
   private void computePredecessors() {
@@ -111,6 +115,10 @@ class ControlFlowGraphBuilder {
   }
 
   private SlangCfgBlock build(Tree tree, SlangCfgBlock currentBlock) {
+    if(!reliableSubFlow){
+      currentBlock.notReliable();
+    }
+
     if(tree instanceof MatchTree) {
       return buildMatchTree((MatchTree) tree, currentBlock);
     } else if(tree instanceof JumpTree) {
@@ -130,9 +138,16 @@ class ControlFlowGraphBuilder {
     } else if(tree instanceof NativeTree) {
       if(tree.children().isEmpty()){
         currentBlock.addElement(tree);
-      } else {
+      } else if(tree.children().size() == 1){
         //Add the child independently
         build(tree.children(), currentBlock);
+      } else {
+        makeUnreliable(currentBlock);
+        reliableSubFlow = false;
+        SlangCfgBlock nativeB = buildSubFlow(tree.children(), currentBlock);
+        nativeB.notReliable();
+        reliableSubFlow = true;
+        return nativeB;
       }
       return currentBlock;
     } else {
@@ -142,9 +157,6 @@ class ControlFlowGraphBuilder {
       return currentBlock;
     }
   }
-
-
-
 
   private SlangCfgBlock buildMatchTree(MatchTree tree, SlangCfgBlock successor){
     if(tree.breakable()) {
@@ -201,10 +213,13 @@ class ControlFlowGraphBuilder {
   private SlangCfgBlock buildBreakStatement(JumpTree tree, SlangCfgBlock successor) {
     if(breakables.isEmpty()){
       //Break with unknown parent (i.e. in switch); do nothing
+      makeUnreliable(successor);
       successor.addElement(tree);
       return successor;
     } else {
+      checkReliableJump(tree, successor);
       SlangCfgBlock newBlock = createBlockWithSyntacticSuccessor(breakables.peek().breakTarget, successor);
+      checkReliableJump(tree, newBlock);
       newBlock.addElement(tree);
       return newBlock;
     }
@@ -213,13 +228,27 @@ class ControlFlowGraphBuilder {
   private SlangCfgBlock buildContinueStatement(JumpTree tree, SlangCfgBlock successor) {
     if(breakables.isEmpty()){
       //Continue with unknown parent; do nothing
+      makeUnreliable(successor);
       successor.addElement(tree);
       return successor;
     } else {
+      checkReliableJump(tree, successor);
       SlangCfgBlock newBlock = createBlockWithSyntacticSuccessor(breakables.peek().continueTarget, successor);
       newBlock.addElement(tree);
+      checkReliableJump(tree, newBlock);
       return newBlock;
     }
+  }
+
+  private void checkReliableJump(JumpTree tree, SlangCfgBlock currentBlock) {
+    if (tree.label() != null) {
+      makeUnreliable(currentBlock);
+    }
+  }
+
+  private void makeUnreliable(CfgBlock b) {
+    b.notReliable();
+    reliable = false;
   }
 
   private SlangCfgBlock buildBlock(BlockTree block, SlangCfgBlock successor) {

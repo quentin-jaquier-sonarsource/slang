@@ -25,12 +25,15 @@ import org.junit.Test;
 import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.CatchTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
+import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.MatchCaseTree;
 import org.sonarsource.slang.api.Tree;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.sonarsource.slang.utils.TreeCreationUtils.assignment;
 import static org.sonarsource.slang.utils.TreeCreationUtils.binary;
 import static org.sonarsource.slang.utils.TreeCreationUtils.block;
@@ -74,6 +77,7 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(3, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
   }
 
   @Test
@@ -107,6 +111,7 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(4, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
   }
 
 
@@ -144,6 +149,7 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(4, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
   }
 
   @Test
@@ -173,6 +179,7 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(5, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
   }
 
 
@@ -183,6 +190,17 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(7, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
+  }
+
+  @Test
+  public void testWhileBreakLabel() {
+    ControlFlowGraph cfg = whileWithJumpCfg(JumpTree.JumpKind.BREAK, identifier("label"));
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(7, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
   }
 
   @Test
@@ -192,9 +210,13 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(7, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
+  }
+  private ControlFlowGraph whileWithJumpCfg(JumpTree.JumpKind kind) {
+    return whileWithJumpCfg(kind, null);
   }
 
-  private ControlFlowGraph whileWithJumpCfg(JumpTree.JumpKind kind) {
+  private ControlFlowGraph whileWithJumpCfg(JumpTree.JumpKind kind, IdentifierTree label) {
     /*
       a = 1;
       while(n == 5) {
@@ -217,7 +239,7 @@ public class CfgTest {
             simpleIfTree(
                 identifier("cond2"), //Cond
                 block(
-                    assignment(identifier("n"), identifier("3")), jumpTree(kind, null)), //Then block
+                    assignment(identifier("n"), identifier("3")), jumpTree(kind, label)), //Then block
                 null //Else block
             ),
             assignment(identifier("b"), identifier("2"))
@@ -260,6 +282,7 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(5, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
   }
 
   @Test
@@ -288,6 +311,7 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(5, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
   }
 
   @Test
@@ -339,6 +363,7 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(7, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
   }
 
   @Test
@@ -380,6 +405,7 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(6, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
   }
 
   @Test
@@ -409,8 +435,76 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(3, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
   }
 
+  @Test
+  public void testTreeWithNative3() {
+     /*
+      a = 1;
+      if(cond) {
+        [Native]{
+        if(cond2) {
+          b = 2;
+        }
+        if(cond3) {
+          c = 3;
+        }
+      }
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), identifier("1")));
+    body.add(simpleIfTree(
+        identifier("cond"), //Cond
+
+        block(simpleNative(null,             simpleIfTree(
+            identifier("cond2"),block(assignment(identifier("b"), identifier("2"))) , null),
+            simpleIfTree(
+                identifier("cond3"),block(assignment(identifier("c"), identifier("3"))) , null)
+        )), //Then block
+        null //Else block
+    ));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(6, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
+  }
+
+  @Test
+  public void testTreeWithNative2() {
+     /*
+      a = 1;
+      if(cond) {
+        [Native]{
+        b = 2
+        c = 3};
+      }
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), identifier("1")));
+    body.add(simpleIfTree(
+        identifier("cond"), //Cond
+
+        block(simpleNative(null, assignment(identifier("b"), identifier("2")),assignment(identifier("c"), identifier("2")))), //Then block
+        null //Else block
+    ));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(3, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
+  }
 
   @Test
   public void testMatchBreak() {
@@ -449,6 +543,37 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(6, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
+  }
+
+  @Test
+  public void testLostBreak() {
+     /*
+      a = 1;
+      if(cond) {
+        b = 2;
+        break;
+        b = 2;
+      }
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), identifier("1")));
+    body.add(simpleIfTree(
+        identifier("cond"), //Cond
+        block(assignment(identifier("b"), identifier("2")), jumpTree(JumpTree.JumpKind.BREAK, null),
+            assignment(identifier("b"), identifier("2"))), //Then block
+        null //Else block
+    ));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(3, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
   }
 
 }
