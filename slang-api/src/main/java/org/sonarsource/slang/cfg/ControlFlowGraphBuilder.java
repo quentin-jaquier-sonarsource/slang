@@ -144,20 +144,48 @@ class ControlFlowGraphBuilder {
   }
 
 
+
+
   private SlangCfgBlock buildMatchTree(MatchTree tree, SlangCfgBlock successor){
-      //We assume that only one case can be executed
-      Set<SlangCfgBlock> cases = new HashSet<>();
-
-      for (MatchCaseTree caseTree : Lists.reverse(tree.cases())) {
-        SlangCfgBlock cas = buildSubFlow(caseTree, successor);
-        cases.add(cas);
-      }
-
-      SlangCfgBlock condition = createMultiSuccessorBlock(cases);
-      condition.addElement(tree.expression());
-
-      return condition;
+    if(tree.breakable()) {
+      return buildBreakableMatchTree(tree, successor);
+    } else {
+      return buildSimpleMatchTree(tree, successor);
     }
+  }
+
+  private SlangCfgBlock buildSimpleMatchTree(MatchTree tree, SlangCfgBlock successor){
+    //We assume that only one case can be executed
+    Set<SlangCfgBlock> cases = new HashSet<>();
+
+    for (MatchCaseTree caseTree : Lists.reverse(tree.cases())) {
+      SlangCfgBlock cas = buildSubFlow(caseTree, successor);
+      cases.add(cas);
+    }
+
+    SlangCfgBlock condition = createMultiSuccessorBlock(cases);
+    condition.addElement(tree.expression());
+
+    return condition;
+  }
+
+  private SlangCfgBlock buildBreakableMatchTree(MatchTree tree, SlangCfgBlock successor){
+    ForwardingBlock defaultBlock = createForwardingBlock();
+    defaultBlock.setSuccessor(successor);
+    SlangCfgBlock nextCase = defaultBlock;
+    SlangCfgBlock caseBody = successor;
+    addBreakable(successor, successor);
+    for (MatchCaseTree caseTree : Lists.reverse(tree.cases())) {
+      caseBody = buildSubFlow(caseTree.body(), caseBody);
+      SlangCfgBranchingBlock caseBranch = createBranchingBlock(caseTree, caseBody, nextCase);
+      caseBranch.addElement(caseTree.expression());
+      nextCase = caseBranch;
+    }
+    removeBreakable();
+    SlangCfgBlock block = createSimpleBlock(nextCase);
+    block.addElement(tree.expression());
+    return block;
+  }
 
   private SlangCfgBlock buildJumpTree(JumpTree tree, SlangCfgBlock successor) {
     switch (tree.kind()) {

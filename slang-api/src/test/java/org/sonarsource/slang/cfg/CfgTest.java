@@ -410,4 +410,45 @@ public class CfgTest {
 
     assertEquals(3, cfg.blocks().size());
   }
+
+
+  @Test
+  public void testMatchBreak() {
+     /*
+    x = 0;
+
+    match(aaa) {
+      case cond1:
+        a = 1;
+      case cond2:
+        b = 2;
+        break;
+      case cond3:
+      c = 3;
+    }
+
+    d = 4;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("x"), identifier("0")));
+
+    List<MatchCaseTree> cases = new ArrayList<>();
+    cases.add(matchCaseTree(identifier("cond1"), assignment(identifier("a"), identifier("1"))));
+    cases.add(matchCaseTree(identifier("cond2"),
+        block(assignment(identifier("b"), identifier("2")), jumpTree(JumpTree.JumpKind.BREAK, null))));
+    cases.add(matchCaseTree(identifier("cond3"), assignment(identifier("c"), identifier("3"))));
+
+    body.add(matchTree(identifier("aaa"), cases));
+
+    body.add(assignment(identifier("d"), identifier("4")));
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(6, cfg.blocks().size());
+  }
+
 }

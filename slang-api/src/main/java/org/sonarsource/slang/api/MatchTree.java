@@ -31,4 +31,5 @@ public interface MatchTree extends Tree {
 
   Token keyword();
 
+  boolean breakable();
 }
