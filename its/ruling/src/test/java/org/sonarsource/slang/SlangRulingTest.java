@@ -52,7 +52,7 @@ public class SlangRulingTest {
   private static Orchestrator orchestrator;
   private static boolean keepSonarqubeRunning = "true".equals(System.getProperty("keepSonarqubeRunning"));
 
-  private static final Set<String> LANGUAGES = ImmutableSet.of("kotlin" , "ruby" , "scala");
+  private static final Set<String> LANGUAGES = ImmutableSet.of("kotlin" , "ruby" , "scala", "sjava");
 
   @BeforeClass
   public static void setUp() {
@@ -78,12 +78,17 @@ public class SlangRulingTest {
     scalaRulesConfiguration.add("S1451", "headerFormat", "^(?i).*copyright");
     scalaRulesConfiguration.add("S1451", "isRegularExpression", "true");
 
+    ProfileGenerator.RulesConfiguration sjavaRulesConfiguration = new ProfileGenerator.RulesConfiguration();
+
     File kotlinProfile = ProfileGenerator.generateProfile(SlangRulingTest.orchestrator.getServer().getUrl(), "kotlin", "kotlin", kotlinRulesConfiguration, Collections.emptySet());
     File rubyProfile = ProfileGenerator.generateProfile(SlangRulingTest.orchestrator.getServer().getUrl(), "ruby", "ruby", rubyRulesConfiguration, Collections.emptySet());
     File scalaProfile = ProfileGenerator.generateProfile(SlangRulingTest.orchestrator.getServer().getUrl(), "scala", "scala", scalaRulesConfiguration, Collections.emptySet());
+    File sjavaProfile = ProfileGenerator.generateProfile(SlangRulingTest.orchestrator.getServer().getUrl(), "sjava", "sjava", sjavaRulesConfiguration, Collections.emptySet());
+
     orchestrator.getServer().restoreProfile(FileLocation.of(kotlinProfile));
     orchestrator.getServer().restoreProfile(FileLocation.of(rubyProfile));
     orchestrator.getServer().restoreProfile(FileLocation.of(scalaProfile));
+    orchestrator.getServer().restoreProfile(FileLocation.of(sjavaProfile));
   }
 
   private static void addLanguagePlugins(OrchestratorBuilder builder) {
@@ -126,6 +131,20 @@ public class SlangRulingTest {
   public void scala_manual_keep_sonarqube_server_up() throws IOException {
     keepSonarqubeRunning = true;
     test_scala();
+  }
+
+  @Test
+  // @Ignore because it should only be run manually
+  @Ignore
+  public void sjava_manual_keep_sonarqube_server_up() throws IOException {
+    keepSonarqubeRunning = true;
+    test_sjava();
+  }
+
+  @Test
+  public void test_sjava() throws IOException {
+    run_ruling_test("sjava", ImmutableMap.of(
+        "sonar.inclusions", "sources/java/**/*.java, ruling/src/test/resources/sources/sjava/**/*.java"));
   }
 
   @Test

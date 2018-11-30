@@ -17,21 +17,17 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarsource.slang.checks.utils;
+package org.sonarsource.sjava.converter;
 
-/**
- * This enum is used only to distinguish default values for rule parameters. This should be the sole exception in otherwise
- * language agnostic module
- */
-public enum Language {
-  KOTLIN, RUBY, SCALA, SJAVA;
+import org.sonarsource.slang.api.ASTConverter;
+import org.sonarsource.slang.api.ParseException;
+import org.sonarsource.slang.api.Tree;
+import org.sonarsource.slang.impl.TextPointerImpl;
 
-  public static final String RUBY_NAMING_DEFAULT = "^(@{0,2}[\\da-z_]+[!?=]?)|([*+-/%=!><~]+)|(\\[]=?)$";
+public class SJavaConverter implements ASTConverter {
 
-  // scala constant starts with upper-case
-  public static final String SCALA_NAMING_DEFAULT = "^[_a-zA-Z][a-zA-Z0-9]*$";
-
-  // support function name suffix '_=', '_+', '_!', ... and operators '+', '-', ...
-  public static final String SCALA_FUNCTION_OR_OPERATOR_NAMING_DEFAULT = "^([a-z][a-zA-Z0-9]*+(_[^a-zA-Z0-9]++)?+|[^a-zA-Z0-9]++)$";
-
+  @Override
+  public Tree parse(String content) {
+    throw new ParseException("Unable to parse file content.", new TextPointerImpl(1,1));
+  }
 }
