@@ -17,19 +17,30 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarsource.slang.api;
+package org.sonarsource.slang.cfg;
 
-import java.util.List;
-import javax.annotation.CheckForNull;
+import com.google.common.collect.ImmutableSet;
+import java.util.Map;
+import org.sonarsource.slang.api.Tree;
 
-public interface MatchTree extends Tree {
+public class SlangCfgEndBlock extends SlangCfgBlock {
+  @Override
+  public ImmutableSet<CfgBlock> successors() {
+    return ImmutableSet.of();
+  }
 
-  @CheckForNull
-  Tree expression();
+  @Override
+  public void addElement(Tree element) {
+    throw new UnsupportedOperationException("Cannot add element to end block");
+  }
 
-  List<MatchCaseTree> cases();
+  @Override
+  public void replaceSuccessors(Map<SlangCfgBlock, SlangCfgBlock> replacements) {
+    throw new UnsupportedOperationException("Cannot replace successors of end block");
+  }
 
-  Token keyword();
-
-  boolean breakable();
+  @Override
+  public String toString() {
+    return "END";
+  }
 }

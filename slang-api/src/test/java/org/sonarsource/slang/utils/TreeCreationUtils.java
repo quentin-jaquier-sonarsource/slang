@@ -19,6 +19,7 @@
  */
 package org.sonarsource.slang.utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,15 +27,23 @@ import java.util.stream.Collectors;
 import org.sonarsource.slang.api.AssignmentExpressionTree;
 import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.BlockTree;
+import org.sonarsource.slang.api.CatchTree;
+import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.IdentifierTree;
+import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.IntegerLiteralTree;
+import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LiteralTree;
 import org.sonarsource.slang.api.LoopTree;
+import org.sonarsource.slang.api.MatchCaseTree;
+import org.sonarsource.slang.api.MatchTree;
 import org.sonarsource.slang.api.ModifierTree;
 import org.sonarsource.slang.api.NativeKind;
 import org.sonarsource.slang.api.NativeTree;
+import org.sonarsource.slang.api.ReturnTree;
 import org.sonarsource.slang.api.TextRange;
+import org.sonarsource.slang.api.ThrowTree;
 import org.sonarsource.slang.api.Token;
 import org.sonarsource.slang.api.TopLevelTree;
 import org.sonarsource.slang.api.Tree;
@@ -43,14 +52,22 @@ import org.sonarsource.slang.api.VariableDeclarationTree;
 import org.sonarsource.slang.impl.AssignmentExpressionTreeImpl;
 import org.sonarsource.slang.impl.BinaryExpressionTreeImpl;
 import org.sonarsource.slang.impl.BlockTreeImpl;
+import org.sonarsource.slang.impl.CatchTreeImpl;
+import org.sonarsource.slang.impl.ExceptionHandlingTreeImpl;
 import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
+import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.IntegerLiteralTreeImpl;
+import org.sonarsource.slang.impl.JumpTreeImpl;
 import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
+import org.sonarsource.slang.impl.MatchCaseTreeImpl;
+import org.sonarsource.slang.impl.MatchTreeImpl;
 import org.sonarsource.slang.impl.ModifierTreeImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
+import org.sonarsource.slang.impl.ReturnTreeImpl;
 import org.sonarsource.slang.impl.TextRangeImpl;
+import org.sonarsource.slang.impl.ThrowTreeImpl;
 import org.sonarsource.slang.impl.TokenImpl;
 import org.sonarsource.slang.impl.TopLevelTreeImpl;
 import org.sonarsource.slang.impl.VariableDeclarationTreeImpl;
@@ -112,12 +129,20 @@ public class TreeCreationUtils {
     return assignment(AssignmentExpressionTree.Operator.EQUAL, leftOperand, rightOperand, textRange, tokens);
   }
 
+  public static BlockTree block(Tree ... body) {
+    return block(Arrays.asList(body));
+  }
+
   public static BlockTree block(List<Tree> body) {
     return new BlockTreeImpl(null, body);
   }
 
   public static BlockTree block(List<Tree> body, TextRange textRange, String ... tokens) {
     return new BlockTreeImpl(metaData(textRange, tokens), body);
+  }
+
+  public static JumpTree jumpTree(JumpTree.JumpKind kind, IdentifierTree label) {
+    return new JumpTreeImpl(null, null, kind, label);
   }
 
   public static FunctionDeclarationTree simpleFunction(IdentifierTree name, BlockTree body) {
@@ -132,12 +157,44 @@ public class TreeCreationUtils {
     return new AssignmentExpressionTreeImpl(metaData(textRange, tokens), operator, leftOperand, rightOperand);
   }
 
+  public static ReturnTree simpleReturn(Tree body) {
+    return new ReturnTreeImpl(null, null, body);
+  }
+
+  public static ThrowTree throwTree(Tree body) {
+    return new ThrowTreeImpl(null, null, body);
+  }
+
+  public static CatchTree catchTree(Tree catchParameter, Tree catchBlock) {
+    return new CatchTreeImpl(null, catchParameter, catchBlock, null);
+  }
+
+  public static ExceptionHandlingTree exceptionHandlingTree(Tree tryBlock, List<CatchTree> catchBlocks, Tree finallyBlock) {
+    return new ExceptionHandlingTreeImpl(null, tryBlock, null, catchBlocks, finallyBlock);
+  }
+
+  public static MatchTree matchTree(Tree expression, List<MatchCaseTree> matchTreeCases) {
+    return new MatchTreeImpl(null, expression, matchTreeCases, null);
+  }
+
+  public static MatchCaseTree matchCaseTree(Tree expression, Tree body) {
+    return new MatchCaseTreeImpl(null, expression, body);
+  }
+
+  public static NativeTree simpleNative(NativeKind kind, Tree ... children) {
+    return simpleNative(kind, Arrays.asList(children));
+  }
+
   public static NativeTree simpleNative(NativeKind kind, List<Tree> children) {
     return new NativeTreeImpl(null, kind, children);
   }
 
   public static NativeTree simpleNative(NativeKind kind, List<String> tokens, List<Tree> children) {
     return new NativeTreeImpl(metaData(tokens), kind, children);
+  }
+
+  public static IfTree simpleIfTree(Tree condition, Tree thenBranch, Tree elseBranch) {
+    return new IfTreeImpl(null, condition, thenBranch, elseBranch, null, null);
   }
 
   public static ModifierTree simpleModifier(ModifierTree.Kind kind) {

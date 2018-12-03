@@ -34,12 +34,18 @@ public class MatchTreeImpl extends BaseTreeImpl implements MatchTree {
   private final Tree expression;
   private final List<MatchCaseTree> cases;
   private final Token keyword;
+  private final boolean breakable;
 
-  public MatchTreeImpl(TreeMetaData metaData, @Nullable Tree expression, List<MatchCaseTree> cases, Token keyword) {
+  public MatchTreeImpl(TreeMetaData metaData, @Nullable Tree expression, List<MatchCaseTree> cases, Token keyword, boolean breakable) {
     super(metaData);
     this.expression = expression;
     this.cases = cases;
     this.keyword = keyword;
+    this.breakable = breakable;
+  }
+
+  public MatchTreeImpl(TreeMetaData metaData, @Nullable Tree expression, List<MatchCaseTree> cases, Token keyword) {
+    this(metaData, expression, cases, keyword, false);
   }
 
   @CheckForNull
@@ -56,6 +62,11 @@ public class MatchTreeImpl extends BaseTreeImpl implements MatchTree {
   @Override
   public Token keyword() {
     return keyword;
+  }
+
+  @Override
+  public boolean breakable() {
+    return breakable;
   }
 
   @Override
