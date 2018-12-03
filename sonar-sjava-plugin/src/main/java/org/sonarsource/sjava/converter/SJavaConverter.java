@@ -33,8 +33,11 @@ import org.sonar.plugins.java.api.tree.CaseGroupTree;
 import org.sonar.plugins.java.api.tree.CatchTree;
 import org.sonar.plugins.java.api.tree.ContinueStatementTree;
 import org.sonar.plugins.java.api.tree.DoWhileStatementTree;
+import org.sonar.plugins.java.api.tree.ExpressionTree;
 import org.sonar.plugins.java.api.tree.ForStatementTree;
 import org.sonar.plugins.java.api.tree.IfStatementTree;
+import org.sonar.plugins.java.api.tree.MemberSelectExpressionTree;
+import org.sonar.plugins.java.api.tree.MethodInvocationTree;
 import org.sonar.plugins.java.api.tree.MethodTree;
 import org.sonar.plugins.java.api.tree.ModifierTree;
 import org.sonar.plugins.java.api.tree.ReturnStatementTree;
@@ -62,6 +65,7 @@ import org.sonarsource.slang.impl.CatchTreeImpl;
 import org.sonarsource.slang.impl.ClassDeclarationTreeImpl;
 import org.sonarsource.slang.impl.ExceptionHandlingTreeImpl;
 import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
+import org.sonarsource.slang.impl.FunctionInvocationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
 import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.JumpTreeImpl;
@@ -135,6 +139,8 @@ public class SJavaConverter implements ASTConverter {
         return createClassDecl((org.sonar.plugins.java.api.tree.ClassTree)t);
       case METHOD:
         return createMethodDecl((MethodTree) t);
+      case METHOD_INVOCATION:
+        return createMethodInvocation((MethodInvocationTree) t);
       case WHILE_STATEMENT:
         return createLoopTree(t, ((WhileStatementTree)t).statement(), ((WhileStatementTree)t).condition(), LoopTree.LoopKind.WHILE, keyword(((WhileStatementTree)t).whileKeyword()));
       case FOR_STATEMENT:
@@ -152,7 +158,7 @@ public class SJavaConverter implements ASTConverter {
       case BLOCK:
         return new BlockTreeImpl(metaData(t), convert(((org.sonar.plugins.java.api.tree.BlockTree) t).body()));
       case IDENTIFIER:
-        return new IdentifierTreeImpl(metaData(t), ((org.sonar.plugins.java.api.tree.IdentifierTree)t).name());
+        return createIdentifierTree((org.sonar.plugins.java.api.tree.IdentifierTree) t);
       case BREAK_STATEMENT:
         return createJumpTree(t, JumpTree.JumpKind.BREAK, ((BreakStatementTree) t).label());
       case CONTINUE_STATEMENT:
@@ -181,6 +187,33 @@ public class SJavaConverter implements ASTConverter {
         return createNativeTree(t);
         // Ignore other kind of elements, no change of gen/kill
     }
+  }
+
+  private IdentifierTree createIdentifierTree(org.sonar.plugins.java.api.tree.IdentifierTree t) {
+    return new IdentifierTreeImpl(metaData(t), (t).name());
+  }
+
+  private Tree createMethodInvocation(MethodInvocationTree t) {
+    Tree methodSelect = null;
+    IdentifierTree identifier;
+
+    if(t.methodSelect().is(org.sonar.plugins.java.api.tree.Tree.Kind.IDENTIFIER)) {
+      identifier = createIdentifierTree((org.sonar.plugins.java.api.tree.IdentifierTree) t.methodSelect());
+    } else if (t.methodSelect().is(org.sonar.plugins.java.api.tree.Tree.Kind.MEMBER_SELECT)) {
+      MemberSelectExpressionTree memberSelect = (MemberSelectExpressionTree)t.methodSelect();
+      if(memberSelect.expression().is(org.sonar.plugins.java.api.tree.Tree.Kind.IDENTIFIER)){
+        methodSelect = convert(memberSelect.expression());
+      } else {
+        //Multiple member select, actually only support one
+        return createNativeTree(t);
+      }
+      identifier = createIdentifierTree(memberSelect.identifier());
+    } else {
+      return createNativeTree(t);
+    }
+    List<Tree> arguments = convert((List<ExpressionTree>)t.arguments());
+
+    return new FunctionInvocationTreeImpl(metaData(t), methodSelect, arguments, identifier);
   }
 
   private Tree createMatchTree(SwitchStatementTree t) {

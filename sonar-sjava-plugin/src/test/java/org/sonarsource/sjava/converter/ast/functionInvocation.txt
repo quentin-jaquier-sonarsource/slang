@@ -1,0 +1,72 @@
+TopLevelTreeImpl
+  ClassDeclarationTreeImpl
+    NativeTreeImpl CLASS
+      NativeTreeImpl VARIABLE
+        NativeTreeImpl MODIFIERS
+        IdentifierTreeImpl Object
+        IdentifierTreeImpl q
+        LiteralTreeImpl STRING_LITERAL
+      FunctionDeclarationTreeImpl
+        NativeTreeImpl TOKEN
+        IdentifierTreeImpl t
+        NativeTreeImpl VARIABLE
+          NativeTreeImpl MODIFIERS
+          IdentifierTreeImpl Object
+          IdentifierTreeImpl p
+        BlockTreeImpl
+          NativeTreeImpl EXPRESSION_STATEMENT
+            FunctionInvocationTreeImpl
+              IdentifierTreeImpl f
+              LiteralTreeImpl INT_LITERAL
+              LiteralTreeImpl INT_LITERAL
+              LiteralTreeImpl INT_LITERAL
+          NativeTreeImpl EXPRESSION_STATEMENT
+            FunctionInvocationTreeImpl
+              IdentifierTreeImpl p
+              IdentifierTreeImpl toString
+          NativeTreeImpl EXPRESSION_STATEMENT
+            NativeTreeImpl METHOD_INVOCATION
+              NativeTreeImpl MEMBER_SELECT
+                NativeTreeImpl MEMBER_SELECT
+                  IdentifierTreeImpl this
+                  IdentifierTreeImpl q
+                IdentifierTreeImpl toString
+              NativeTreeImpl ARGUMENTS
+          NativeTreeImpl EXPRESSION_STATEMENT
+            NativeTreeImpl METHOD_INVOCATION
+              NativeTreeImpl MEMBER_SELECT
+                NativeTreeImpl MEMBER_SELECT
+                  IdentifierTreeImpl functionInvocation
+                  IdentifierTreeImpl q
+                IdentifierTreeImpl toString
+              NativeTreeImpl ARGUMENTS
+          NativeTreeImpl EXPRESSION_STATEMENT
+            FunctionInvocationTreeImpl
+              IdentifierTreeImpl this
+              IdentifierTreeImpl f
+              LiteralTreeImpl INT_LITERAL
+              LiteralTreeImpl INT_LITERAL
+              LiteralTreeImpl INT_LITERAL
+      FunctionDeclarationTreeImpl
+        NativeTreeImpl TOKEN
+        IdentifierTreeImpl f
+        NativeTreeImpl VARIABLE
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl PRIMITIVE_TYPE
+          IdentifierTreeImpl i
+        NativeTreeImpl VARIABLE
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl PRIMITIVE_TYPE
+          IdentifierTreeImpl j
+        NativeTreeImpl VARIABLE
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl PRIMITIVE_TYPE
+          IdentifierTreeImpl k
+        BlockTreeImpl
+          ReturnTreeImpl
+            NativeTreeImpl PLUS
+              NativeTreeImpl PLUS
+                IdentifierTreeImpl i
+                IdentifierTreeImpl j
+              IdentifierTreeImpl k
+  NativeTreeImpl TOKEN
