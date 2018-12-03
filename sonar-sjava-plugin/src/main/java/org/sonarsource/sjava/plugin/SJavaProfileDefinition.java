@@ -17,21 +17,19 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarsource.slang.checks.utils;
+package org.sonarsource.sjava.plugin;
 
-/**
- * This enum is used only to distinguish default values for rule parameters. This should be the sole exception in otherwise
- * language agnostic module
- */
-public enum Language {
-  KOTLIN, RUBY, SCALA, SJAVA;
+import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition;
+import org.sonarsource.analyzer.commons.BuiltInQualityProfileJsonLoader;
 
-  public static final String RUBY_NAMING_DEFAULT = "^(@{0,2}[\\da-z_]+[!?=]?)|([*+-/%=!><~]+)|(\\[]=?)$";
+public class SJavaProfileDefinition implements BuiltInQualityProfilesDefinition {
 
-  // scala constant starts with upper-case
-  public static final String SCALA_NAMING_DEFAULT = "^[_a-zA-Z][a-zA-Z0-9]*$";
-
-  // support function name suffix '_=', '_+', '_!', ... and operators '+', '-', ...
-  public static final String SCALA_FUNCTION_OR_OPERATOR_NAMING_DEFAULT = "^([a-z][a-zA-Z0-9]*+(_[^a-zA-Z0-9]++)?+|[^a-zA-Z0-9]++)$";
+  static final String PATH_TO_JSON = "org/sonar/l10n/sjava/rules/sjava/Sonar_way_profile.json";
+  @Override
+  public void define(BuiltInQualityProfilesDefinition.Context context) {
+    NewBuiltInQualityProfile profile = context.createBuiltInQualityProfile(SJavaPlugin.PROFILE_NAME, SJavaPlugin.SJAVA_LANGUAGE_KEY);
+    BuiltInQualityProfileJsonLoader.load(profile, SJavaPlugin.SJAVA_REPOSITORY_KEY, PATH_TO_JSON);
+    profile.done();
+  }
 
 }

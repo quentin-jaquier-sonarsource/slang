@@ -17,21 +17,26 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarsource.slang.checks.utils;
+package org.sonarsource.sjava.plugin;
 
-/**
- * This enum is used only to distinguish default values for rule parameters. This should be the sole exception in otherwise
- * language agnostic module
- */
-public enum Language {
-  KOTLIN, RUBY, SCALA, SJAVA;
+import org.sonar.api.config.Configuration;
+import org.sonar.api.resources.AbstractLanguage;
 
-  public static final String RUBY_NAMING_DEFAULT = "^(@{0,2}[\\da-z_]+[!?=]?)|([*+-/%=!><~]+)|(\\[]=?)$";
+public class SJavaLanguage extends AbstractLanguage {
+  private Configuration configuration;
 
-  // scala constant starts with upper-case
-  public static final String SCALA_NAMING_DEFAULT = "^[_a-zA-Z][a-zA-Z0-9]*$";
+  public SJavaLanguage(Configuration configuration) {
+    super(SJavaPlugin.SJAVA_LANGUAGE_KEY, SJavaPlugin.SJAVA_LANGUAGE_NAME);
+    this.configuration = configuration;
+  }
 
-  // support function name suffix '_=', '_+', '_!', ... and operators '+', '-', ...
-  public static final String SCALA_FUNCTION_OR_OPERATOR_NAMING_DEFAULT = "^([a-z][a-zA-Z0-9]*+(_[^a-zA-Z0-9]++)?+|[^a-zA-Z0-9]++)$";
+  @Override
+  public String[] getFileSuffixes() {
+    String[] suffixes = configuration.getStringArray(SJavaPlugin.SJAVA_FILE_SUFFIXES_KEY);
+    if (suffixes.length == 0) {
+      suffixes = SJavaPlugin.SJAVA_FILE_SUFFIXES_DEFAULT_VALUE.split(",");
+    }
+    return suffixes;
+  }
 
 }

@@ -1,0 +1,72 @@
+TopLevelTreeImpl
+  ClassDeclarationTreeImpl
+    NativeTreeImpl CLASS
+      NativeTreeImpl ENUM
+        NativeTreeImpl MODIFIERS
+        IdentifierTreeImpl letter
+        NativeTreeImpl TYPE_PARAMETERS
+        NativeTreeImpl LIST
+        NativeTreeImpl ENUM_CONSTANT
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl NEW_CLASS
+            IdentifierTreeImpl A
+            NativeTreeImpl ARGUMENTS
+        NativeTreeImpl ENUM_CONSTANT
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl NEW_CLASS
+            IdentifierTreeImpl B
+            NativeTreeImpl ARGUMENTS
+        NativeTreeImpl ENUM_CONSTANT
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl NEW_CLASS
+            IdentifierTreeImpl C
+            NativeTreeImpl ARGUMENTS
+      FunctionDeclarationTreeImpl
+        NativeTreeImpl TOKEN
+        IdentifierTreeImpl t
+        NativeTreeImpl VARIABLE
+          NativeTreeImpl MODIFIERS
+          IdentifierTreeImpl letter
+          IdentifierTreeImpl l
+        BlockTreeImpl
+          NativeTreeImpl VARIABLE
+            NativeTreeImpl MODIFIERS
+            NativeTreeImpl PRIMITIVE_TYPE
+            IdentifierTreeImpl i
+            LiteralTreeImpl INT_LITERAL
+          MatchTreeImpl
+            IdentifierTreeImpl l
+            MatchCaseTreeImpl
+              NativeTreeImpl CASE_LABEL
+                IdentifierTreeImpl A
+              NativeTreeImpl CASE_GROUP
+                NativeTreeImpl EXPRESSION_STATEMENT
+                  AssignmentExpressionTreeImpl EQUAL
+                    IdentifierTreeImpl i
+                    LiteralTreeImpl INT_LITERAL
+                JumpTreeImpl
+            MatchCaseTreeImpl
+              NativeTreeImpl CASE_LABEL
+                IdentifierTreeImpl B
+              NativeTreeImpl CASE_GROUP
+                NativeTreeImpl EXPRESSION_STATEMENT
+                  AssignmentExpressionTreeImpl EQUAL
+                    IdentifierTreeImpl i
+                    LiteralTreeImpl INT_LITERAL
+            MatchCaseTreeImpl
+              NativeTreeImpl CASE_LABEL
+                IdentifierTreeImpl C
+              NativeTreeImpl CASE_GROUP
+                NativeTreeImpl EXPRESSION_STATEMENT
+                  AssignmentExpressionTreeImpl EQUAL
+                    IdentifierTreeImpl i
+                    LiteralTreeImpl INT_LITERAL
+                JumpTreeImpl
+            MatchCaseTreeImpl
+              NativeTreeImpl CASE_LABEL
+              NativeTreeImpl CASE_GROUP
+                NativeTreeImpl EXPRESSION_STATEMENT
+                  AssignmentExpressionTreeImpl EQUAL
+                    IdentifierTreeImpl i
+                    LiteralTreeImpl INT_LITERAL
+  NativeTreeImpl TOKEN

@@ -1,0 +1,62 @@
+TopLevelTreeImpl
+  ClassDeclarationTreeImpl
+    NativeTreeImpl CLASS
+      FunctionDeclarationTreeImpl
+        NativeTreeImpl TOKEN
+        IdentifierTreeImpl t
+        NativeTreeImpl VARIABLE
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl PRIMITIVE_TYPE
+          IdentifierTreeImpl i
+        BlockTreeImpl
+          LoopTreeImpl
+            BinaryExpressionTreeImpl EQUAL_TO
+              IdentifierTreeImpl i
+              IdentifierTreeImpl i
+            BlockTreeImpl
+              NativeTreeImpl EXPRESSION_STATEMENT
+                AssignmentExpressionTreeImpl EQUAL
+                  IdentifierTreeImpl i
+                  LiteralTreeImpl INT_LITERAL
+              IfTreeImpl
+                BinaryExpressionTreeImpl EQUAL_TO
+                  IdentifierTreeImpl i
+                  LiteralTreeImpl INT_LITERAL
+                BlockTreeImpl
+                  JumpTreeImpl
+          LoopTreeImpl
+            BinaryExpressionTreeImpl EQUAL_TO
+              IdentifierTreeImpl i
+              LiteralTreeImpl INT_LITERAL
+            BlockTreeImpl
+              IfTreeImpl
+                BinaryExpressionTreeImpl EQUAL_TO
+                  IdentifierTreeImpl i
+                  LiteralTreeImpl INT_LITERAL
+                BlockTreeImpl
+                  JumpTreeImpl
+          LoopTreeImpl
+            NativeTreeImpl LESS_THAN
+              IdentifierTreeImpl j
+              LiteralTreeImpl INT_LITERAL
+            BlockTreeImpl
+              IfTreeImpl
+                BinaryExpressionTreeImpl EQUAL_TO
+                  IdentifierTreeImpl j
+                  LiteralTreeImpl INT_LITERAL
+                BlockTreeImpl
+                  ReturnTreeImpl
+                    NativeTreeImpl PLUS
+                      IdentifierTreeImpl j
+                      LiteralTreeImpl INT_LITERAL
+              NativeTreeImpl EXPRESSION_STATEMENT
+                AssignmentExpressionTreeImpl EQUAL
+                  IdentifierTreeImpl i
+                  NativeTreeImpl REMAINDER
+                    IdentifierTreeImpl j
+                    LiteralTreeImpl INT_LITERAL
+          ReturnTreeImpl
+            NativeTreeImpl PLUS
+              LiteralTreeImpl INT_LITERAL
+              IdentifierTreeImpl i
+  NativeTreeImpl TOKEN
