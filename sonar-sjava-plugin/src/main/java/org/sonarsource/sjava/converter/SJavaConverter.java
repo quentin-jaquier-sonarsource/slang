@@ -29,12 +29,18 @@ import org.sonar.java.ast.parser.JavaParser;
 import org.sonar.java.model.JavaTree;
 import org.sonar.plugins.java.api.tree.AssignmentExpressionTree;
 import org.sonar.plugins.java.api.tree.BreakStatementTree;
+import org.sonar.plugins.java.api.tree.CaseGroupTree;
+import org.sonar.plugins.java.api.tree.CatchTree;
 import org.sonar.plugins.java.api.tree.ContinueStatementTree;
 import org.sonar.plugins.java.api.tree.DoWhileStatementTree;
 import org.sonar.plugins.java.api.tree.ForStatementTree;
 import org.sonar.plugins.java.api.tree.IfStatementTree;
 import org.sonar.plugins.java.api.tree.MethodTree;
 import org.sonar.plugins.java.api.tree.ModifierTree;
+import org.sonar.plugins.java.api.tree.ReturnStatementTree;
+import org.sonar.plugins.java.api.tree.SwitchStatementTree;
+import org.sonar.plugins.java.api.tree.ThrowStatementTree;
+import org.sonar.plugins.java.api.tree.TryStatementTree;
 import org.sonar.plugins.java.api.tree.WhileStatementTree;
 import org.sonarsource.slang.api.ASTConverter;
 import org.sonarsource.slang.api.BinaryExpressionTree;
@@ -42,20 +48,27 @@ import org.sonarsource.slang.api.BlockTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LoopTree;
+import org.sonarsource.slang.api.MatchCaseTree;
 import org.sonarsource.slang.api.ParseException;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.TreeMetaData;
 import org.sonarsource.slang.impl.AssignmentExpressionTreeImpl;
 import org.sonarsource.slang.impl.BinaryExpressionTreeImpl;
 import org.sonarsource.slang.impl.BlockTreeImpl;
+import org.sonarsource.slang.impl.CatchTreeImpl;
 import org.sonarsource.slang.impl.ClassDeclarationTreeImpl;
+import org.sonarsource.slang.impl.ExceptionHandlingTreeImpl;
 import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
 import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.JumpTreeImpl;
 import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
+import org.sonarsource.slang.impl.MatchCaseTreeImpl;
+import org.sonarsource.slang.impl.MatchTreeImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
+import org.sonarsource.slang.impl.ReturnTreeImpl;
+import org.sonarsource.slang.impl.ThrowTreeImpl;
 import org.sonarsource.slang.impl.TopLevelTreeImpl;
 
 public class SJavaConverter implements ASTConverter {
@@ -99,6 +112,8 @@ public class SJavaConverter implements ASTConverter {
         return createLoopTree(t, ((DoWhileStatementTree)t).statement(), ((DoWhileStatementTree)t).condition(), LoopTree.LoopKind.DOWHILE);
       case IF_STATEMENT:
         return createIfTree((IfStatementTree)t);
+      case SWITCH_STATEMENT:
+        return createMatchTree((SwitchStatementTree)t);
       case ASSIGNMENT:
       return new AssignmentExpressionTreeImpl(metaData(t), org.sonarsource.slang.api.AssignmentExpressionTree.Operator.EQUAL,
           convert(((AssignmentExpressionTree)t).variable()),
@@ -108,9 +123,15 @@ public class SJavaConverter implements ASTConverter {
       case IDENTIFIER:
         return new IdentifierTreeImpl(metaData(t), ((org.sonar.plugins.java.api.tree.IdentifierTree)t).name());
       case BREAK_STATEMENT:
-        return createJumpStatement(t, JumpTree.JumpKind.BREAK, ((BreakStatementTree) t).label());
+        return createJumpTree(t, JumpTree.JumpKind.BREAK, ((BreakStatementTree) t).label());
       case CONTINUE_STATEMENT:
-        return createJumpStatement(t, JumpTree.JumpKind.CONTINUE, ((ContinueStatementTree) t).label());
+        return createJumpTree(t, JumpTree.JumpKind.CONTINUE, ((ContinueStatementTree) t).label());
+      case RETURN_STATEMENT:
+        return createReturnTree((ReturnStatementTree)t);
+      case TRY_STATEMENT:
+        return createTryTree((TryStatementTree) t);
+      case THROW_STATEMENT:
+        return createThrowTree((ThrowStatementTree) t);
       case INT_LITERAL:
       case LONG_LITERAL:
       case FLOAT_LITERAL:
@@ -130,6 +151,29 @@ public class SJavaConverter implements ASTConverter {
         // Ignore other kind of elements, no change of gen/kill
     }
   }
+
+  private Tree createMatchTree(SwitchStatementTree t) {
+    Tree expression = convert(t.expression());
+
+    List<MatchCaseTree> cases = t.cases().stream().map(this::createNatchCaseTree).collect(Collectors.toList());
+
+    return new MatchTreeImpl(metaData(t), expression, cases, null);
+  }
+
+  private MatchCaseTree createNatchCaseTree(CaseGroupTree t) {
+    Tree label;
+    List<Tree> labels = convert(t.labels());
+    if(labels.size() == 1) {
+      label = labels.get(0);
+    } else {
+      label = createNativeTree(t, labels);
+    }
+
+    Tree body = createNativeTree(t, convert(t.body()));
+
+    return new MatchCaseTreeImpl(metaData(t), label, body);
+  }
+
 
   private Tree createIfTree(IfStatementTree t) {
     Tree cond = convert(t.condition());
@@ -161,12 +205,37 @@ public class SJavaConverter implements ASTConverter {
     return new FunctionDeclarationTreeImpl(metaData(t), modifiers, returnType, name, parameters, body, new ArrayList<>());
   }
 
-  private Tree createJumpStatement(org.sonar.plugins.java.api.tree.Tree t, JumpTree.JumpKind kind, @Nullable org.sonar.plugins.java.api.tree.Tree label){
+  private Tree createTryTree(TryStatementTree t) {
+    Tree tryBlock = convert(t.block());
+    List<org.sonarsource.slang.api.CatchTree> catchBlocks = t.catches().stream().map(this::createCatchTree).collect(Collectors.toList());
+    Tree finallyBlock = null;
+    if(t.finallyBlock() != null){
+      finallyBlock = convert(t.finallyBlock());
+    }
+    return new ExceptionHandlingTreeImpl(metaData(t), tryBlock, null, catchBlocks, finallyBlock);
+  }
+
+
+  private Tree createThrowTree(ThrowStatementTree t) {
+    return new ThrowTreeImpl(metaData(t), null, convert(t.expression()));
+  }
+
+  private org.sonarsource.slang.api.CatchTree createCatchTree(CatchTree t) {
+    Tree catchParameters = convert(t.parameter());
+    Tree catchBlock = convert(t.block());
+    return new CatchTreeImpl(metaData(t), catchParameters, catchBlock, null);
+  }
+
+  private Tree createJumpTree(org.sonar.plugins.java.api.tree.Tree t, JumpTree.JumpKind kind, @Nullable org.sonar.plugins.java.api.tree.Tree label){
     IdentifierTree labelName = null;
     if(label != null){
       labelName = (IdentifierTree)convert(label);
     }
     return new JumpTreeImpl(metaData(t), null, kind, labelName);
+  }
+
+  private Tree createReturnTree(ReturnStatementTree t) {
+    return new ReturnTreeImpl(metaData(t), null, convert(t.expression()));
   }
 
   private Tree createClassDecl(org.sonar.plugins.java.api.tree.ClassTree t) {
