@@ -1,0 +1,87 @@
+TopLevelTreeImpl
+  ClassDeclarationTreeImpl
+    NativeTreeImpl CLASS
+      FunctionDeclarationTreeImpl
+        NativeTreeImpl TOKEN
+        IdentifierTreeImpl t
+        NativeTreeImpl VARIABLE
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl PRIMITIVE_TYPE
+          IdentifierTreeImpl i
+        BlockTreeImpl
+          NativeTreeImpl VARIABLE
+            NativeTreeImpl MODIFIERS
+            NativeTreeImpl PRIMITIVE_TYPE
+            IdentifierTreeImpl a
+            LiteralTreeImpl INT_LITERAL
+          ExceptionHandlingTreeImpl
+            BlockTreeImpl
+              IfTreeImpl
+                BinaryExpressionTreeImpl EQUAL_TO
+                  IdentifierTreeImpl i
+                  LiteralTreeImpl INT_LITERAL
+                BlockTreeImpl
+                  ThrowTreeImpl
+                    NativeTreeImpl NEW_CLASS
+                      IdentifierTreeImpl IllegalArgumentException
+                      NativeTreeImpl ARGUMENTS
+                        LiteralTreeImpl STRING_LITERAL
+              NativeTreeImpl EXPRESSION_STATEMENT
+                AssignmentExpressionTreeImpl EQUAL
+                  IdentifierTreeImpl a
+                  LiteralTreeImpl INT_LITERAL
+            CatchTreeImpl
+              NativeTreeImpl VARIABLE
+                NativeTreeImpl MODIFIERS
+                IdentifierTreeImpl Exception
+                IdentifierTreeImpl e
+              BlockTreeImpl
+                NativeTreeImpl EXPRESSION_STATEMENT
+                  AssignmentExpressionTreeImpl EQUAL
+                    IdentifierTreeImpl a
+                    LiteralTreeImpl INT_LITERAL
+            BlockTreeImpl
+              NativeTreeImpl EXPRESSION_STATEMENT
+                AssignmentExpressionTreeImpl EQUAL
+                  IdentifierTreeImpl a
+                  LiteralTreeImpl INT_LITERAL
+      FunctionDeclarationTreeImpl
+        NativeTreeImpl TOKEN
+        IdentifierTreeImpl t1
+        NativeTreeImpl VARIABLE
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl PRIMITIVE_TYPE
+          IdentifierTreeImpl i
+        BlockTreeImpl
+          NativeTreeImpl VARIABLE
+            NativeTreeImpl MODIFIERS
+            NativeTreeImpl PRIMITIVE_TYPE
+            IdentifierTreeImpl a
+            LiteralTreeImpl INT_LITERAL
+          ExceptionHandlingTreeImpl
+            BlockTreeImpl
+              IfTreeImpl
+                BinaryExpressionTreeImpl EQUAL_TO
+                  IdentifierTreeImpl i
+                  LiteralTreeImpl INT_LITERAL
+                BlockTreeImpl
+                  ThrowTreeImpl
+                    NativeTreeImpl NEW_CLASS
+                      IdentifierTreeImpl IllegalArgumentException
+                      NativeTreeImpl ARGUMENTS
+                        LiteralTreeImpl STRING_LITERAL
+              NativeTreeImpl EXPRESSION_STATEMENT
+                AssignmentExpressionTreeImpl EQUAL
+                  IdentifierTreeImpl a
+                  LiteralTreeImpl INT_LITERAL
+            CatchTreeImpl
+              NativeTreeImpl VARIABLE
+                NativeTreeImpl MODIFIERS
+                IdentifierTreeImpl Exception
+                IdentifierTreeImpl e
+              BlockTreeImpl
+                NativeTreeImpl EXPRESSION_STATEMENT
+                  AssignmentExpressionTreeImpl EQUAL
+                    IdentifierTreeImpl a
+                    LiteralTreeImpl INT_LITERAL
+  NativeTreeImpl TOKEN

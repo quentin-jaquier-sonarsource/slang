@@ -1,0 +1,37 @@
+TopLevelTreeImpl
+  ClassDeclarationTreeImpl
+    NativeTreeImpl CLASS
+      FunctionDeclarationTreeImpl
+        NativeTreeImpl TOKEN
+        IdentifierTreeImpl t
+        NativeTreeImpl VARIABLE
+          NativeTreeImpl MODIFIERS
+          NativeTreeImpl PRIMITIVE_TYPE
+          IdentifierTreeImpl i
+        BlockTreeImpl
+          LoopTreeImpl
+            BinaryExpressionTreeImpl EQUAL_TO
+              IdentifierTreeImpl i
+              IdentifierTreeImpl i
+            BlockTreeImpl
+              NativeTreeImpl EXPRESSION_STATEMENT
+                AssignmentExpressionTreeImpl EQUAL
+                  IdentifierTreeImpl i
+                  LiteralTreeImpl INT_LITERAL
+          LoopTreeImpl
+            BinaryExpressionTreeImpl EQUAL_TO
+              IdentifierTreeImpl i
+              LiteralTreeImpl INT_LITERAL
+            BlockTreeImpl
+          LoopTreeImpl
+            NativeTreeImpl LESS_THAN
+              IdentifierTreeImpl j
+              LiteralTreeImpl INT_LITERAL
+            BlockTreeImpl
+              NativeTreeImpl EXPRESSION_STATEMENT
+                AssignmentExpressionTreeImpl EQUAL
+                  IdentifierTreeImpl i
+                  NativeTreeImpl REMAINDER
+                    IdentifierTreeImpl j
+                    LiteralTreeImpl INT_LITERAL
+  NativeTreeImpl TOKEN
