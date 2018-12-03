@@ -65,7 +65,7 @@ public class SJavaConverterTest {
   }
 
   public static List<Path> getJavaSources() throws IOException {
-    try (Stream<Path> pathStream = Files.walk(Paths.get("sonar-sjava-plugin", "src", "test", "java", "org", "sonarsource", "sjava", "converter", "ast"))) {
+    try (Stream<Path> pathStream = Files.walk(Paths.get( "src", "test", "java", "org", "sonarsource", "sjava", "converter", "ast"))) {
       return pathStream
           .filter(path -> !path.toFile().isDirectory() && path.getFileName().toString().endsWith(".java"))
           .sorted()
@@ -78,20 +78,22 @@ public class SJavaConverterTest {
   public void test_in() {
 
     String content = "class T {\n" +
+        "String s = \"aaaaabbbb\";  \n" +
         "int a = 1; // comment \n" +
-        "public void t(int i) {\n" +
+        "public boolean t(int i) {\n" +
         "if(p < 19) {\n" +
         " a = true || false;" +
         "}\n" +
         " while (p == null) {\n" +
         "    break;" +
         "   }\n" +
+        "return false;\n" +
         " }\n" +
         "}\n";
     Tree t = converter.parse(content);
 
 
-    System.out.println(TreePrinter.tree2string(t));
+    System.out.println(TreePrinter.table(t));
   }
 
 
