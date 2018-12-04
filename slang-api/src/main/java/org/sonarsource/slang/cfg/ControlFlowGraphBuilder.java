@@ -352,9 +352,9 @@ class ControlFlowGraphBuilder {
   private SlangCfgBlock buildIfStatement(IfTree tree, SlangCfgBlock successor) {
     SlangCfgBlock falseBlock = successor;
     if (tree.elseBranch() != null) {
-      falseBlock = buildSubFlow(tree.elseBranch().children(), successor);
+      falseBlock = buildSubFlow(tree.elseBranch(), successor);
     }
-    SlangCfgBlock trueBlock = buildSubFlow(tree.thenBranch().children(), successor);
+    SlangCfgBlock trueBlock = buildSubFlow(tree.thenBranch(), successor);
     SlangCfgBranchingBlock conditionBlock = createBranchingBlock(tree, trueBlock, falseBlock);
     conditionBlock.addElement(tree.condition());
     return conditionBlock;
