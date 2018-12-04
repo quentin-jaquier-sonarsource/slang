@@ -45,6 +45,12 @@
         </dependency>
         <dependency>
             <groupId>org.sonarsource.slang</groupId>
+            <artifactId>sonar-sjava-plugin</artifactId>
+            <version>1.3-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.sonarsource.slang</groupId>
             <artifactId>slang-antlr</artifactId>
             <version>1.3-SNAPSHOT</version>
         </dependency>
