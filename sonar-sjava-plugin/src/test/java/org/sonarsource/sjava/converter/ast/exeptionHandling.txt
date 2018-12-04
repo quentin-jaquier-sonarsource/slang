@@ -5,14 +5,14 @@ TopLevelTree {                               | public … }              | 20:1 
     ?CLASS? {                                | public … }              | 20:1 … 46:2  
       FunctionDeclarationTree {              | public … }              | 21:3 … 33:4  
         IdentifierTree                       | t                       | 21:15 … 21:16
-        ?VARIABLE? {                         | int … i                 | 21:17 … 21:22
-          ?PRIMITIVE_TYPE?                   | int                     | 21:17 … 21:20
+        VariableDeclarationTree {            | int … i                 | 21:17 … 21:22
           IdentifierTree                     | i                       | 21:21 … 21:22
+          ?PRIMITIVE_TYPE?                   | int                     | 21:17 … 21:20
         }                                    |                         |              
         BlockTree {                          | { … }                   | 21:24 … 33:4 
-          ?VARIABLE? {                       | int … ;                 | 22:5 … 22:15 
-            ?PRIMITIVE_TYPE?                 | int                     | 22:5 … 22:8  
+          VariableDeclarationTree {          | int … ;                 | 22:5 … 22:15 
             IdentifierTree                   | a                       | 22:9 … 22:10 
+            ?PRIMITIVE_TYPE?                 | int                     | 22:5 … 22:8  
             LiteralTree                      | 1                       | 22:13 … 22:14
           }                                  |                         |              
           ExceptionHandlingTree {            | try … }                 | 23:5 … 32:6  
@@ -41,9 +41,9 @@ TopLevelTree {                               | public … }              | 20:1 
               }                              |                         |              
             }                                |                         |              
             CatchTree {                      | catch … }               | 28:7 … 30:6  
-              ?VARIABLE? {                   | Exception … e           | 28:14 … 28:25
-                IdentifierTree               | Exception               | 28:14 … 28:23
+              VariableDeclarationTree {      | Exception … e           | 28:14 … 28:25
                 IdentifierTree               | e                       | 28:24 … 28:25
+                IdentifierTree               | Exception               | 28:14 … 28:23
               }                              |                         |              
               BlockTree {                    | { … }                   | 28:27 … 30:6 
                 ?EXPRESSION_STATEMENT? {     | a … ;                   | 29:7 … 29:13 
@@ -67,14 +67,14 @@ TopLevelTree {                               | public … }              | 20:1 
       }                                      |                         |              
       FunctionDeclarationTree {              | public … }              | 35:3 … 45:4  
         IdentifierTree                       | t1                      | 35:15 … 35:17
-        ?VARIABLE? {                         | int … i                 | 35:18 … 35:23
-          ?PRIMITIVE_TYPE?                   | int                     | 35:18 … 35:21
+        VariableDeclarationTree {            | int … i                 | 35:18 … 35:23
           IdentifierTree                     | i                       | 35:22 … 35:23
+          ?PRIMITIVE_TYPE?                   | int                     | 35:18 … 35:21
         }                                    |                         |              
         BlockTree {                          | { … }                   | 35:25 … 45:4 
-          ?VARIABLE? {                       | int … ;                 | 36:5 … 36:15 
-            ?PRIMITIVE_TYPE?                 | int                     | 36:5 … 36:8  
+          VariableDeclarationTree {          | int … ;                 | 36:5 … 36:15 
             IdentifierTree                   | a                       | 36:9 … 36:10 
+            ?PRIMITIVE_TYPE?                 | int                     | 36:5 … 36:8  
             LiteralTree                      | 1                       | 36:13 … 36:14
           }                                  |                         |              
           ExceptionHandlingTree {            | try … }                 | 37:5 … 44:6  
@@ -103,9 +103,9 @@ TopLevelTree {                               | public … }              | 20:1 
               }                              |                         |              
             }                                |                         |              
             CatchTree {                      | catch … }               | 42:7 … 44:6  
-              ?VARIABLE? {                   | Exception … e           | 42:14 … 42:25
-                IdentifierTree               | Exception               | 42:14 … 42:23
+              VariableDeclarationTree {      | Exception … e           | 42:14 … 42:25
                 IdentifierTree               | e                       | 42:24 … 42:25
+                IdentifierTree               | Exception               | 42:14 … 42:23
               }                              |                         |              
               BlockTree {                    | { … }                   | 42:27 … 44:6 
                 ?EXPRESSION_STATEMENT? {     | a … ;                   | 43:7 … 43:13 

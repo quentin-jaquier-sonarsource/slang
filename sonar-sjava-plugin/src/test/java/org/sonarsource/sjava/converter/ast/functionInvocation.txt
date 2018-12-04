@@ -3,17 +3,16 @@ AST node class                       | first…last tokens     | line:col
 TopLevelTree {                       | public … }            | 20:1 … 36:1  
   ClassDeclarationTree {             | public … }            | 20:1 … 34:2  
     ?CLASS? {                        | public … }            | 20:1 … 34:2  
-      ?VARIABLE? {                   | public … ;            | 21:3 … 21:31 
-        ?MODIFIERS?                  | public … static       | 21:3 … 21:16 
-        IdentifierTree               | Object                | 21:17 … 21:23
+      VariableDeclarationTree {      | public … ;            | 21:3 … 21:31 
         IdentifierTree               | q                     | 21:24 … 21:25
+        IdentifierTree               | Object                | 21:17 … 21:23
         LiteralTree                  | ""                    | 21:28 … 21:30
       }                              |                       |              
       FunctionDeclarationTree {      | public … }            | 23:3 … 29:4  
         IdentifierTree               | t                     | 23:15 … 23:16
-        ?VARIABLE? {                 | Object … p            | 23:17 … 23:25
-          IdentifierTree             | Object                | 23:17 … 23:23
+        VariableDeclarationTree {    | Object … p            | 23:17 … 23:25
           IdentifierTree             | p                     | 23:24 … 23:25
+          IdentifierTree             | Object                | 23:17 … 23:23
         }                            |                       |              
         BlockTree {                  | { … }                 | 23:27 … 29:4 
           ?EXPRESSION_STATEMENT? {   | f … ;                 | 24:5 … 24:14 
@@ -67,17 +66,17 @@ TopLevelTree {                       | public … }            | 20:1 … 36:1
       }                              |                       |              
       FunctionDeclarationTree {      | private … }           | 31:3 … 33:4  
         IdentifierTree               | f                     | 31:15 … 31:16
-        ?VARIABLE? {                 | int … ,               | 31:17 … 31:23
-          ?PRIMITIVE_TYPE?           | int                   | 31:17 … 31:20
+        VariableDeclarationTree {    | int … ,               | 31:17 … 31:23
           IdentifierTree             | i                     | 31:21 … 31:22
+          ?PRIMITIVE_TYPE?           | int                   | 31:17 … 31:20
         }                            |                       |              
-        ?VARIABLE? {                 | int … ,               | 31:24 … 31:30
-          ?PRIMITIVE_TYPE?           | int                   | 31:24 … 31:27
+        VariableDeclarationTree {    | int … ,               | 31:24 … 31:30
           IdentifierTree             | j                     | 31:28 … 31:29
+          ?PRIMITIVE_TYPE?           | int                   | 31:24 … 31:27
         }                            |                       |              
-        ?VARIABLE? {                 | int … k               | 31:31 … 31:36
-          ?PRIMITIVE_TYPE?           | int                   | 31:31 … 31:34
+        VariableDeclarationTree {    | int … k               | 31:31 … 31:36
           IdentifierTree             | k                     | 31:35 … 31:36
+          ?PRIMITIVE_TYPE?           | int                   | 31:31 … 31:34
         }                            |                       |              
         BlockTree {                  | { … }                 | 31:38 … 33:4 
           ReturnTree {               | return … ;            | 32:5 … 32:22 

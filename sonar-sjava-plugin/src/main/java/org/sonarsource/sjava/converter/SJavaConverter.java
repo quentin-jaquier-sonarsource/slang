@@ -46,6 +46,7 @@ import org.sonar.plugins.java.api.tree.SwitchStatementTree;
 import org.sonar.plugins.java.api.tree.SyntaxToken;
 import org.sonar.plugins.java.api.tree.ThrowStatementTree;
 import org.sonar.plugins.java.api.tree.TryStatementTree;
+import org.sonar.plugins.java.api.tree.VariableTree;
 import org.sonar.plugins.java.api.tree.WhileStatementTree;
 import org.sonarsource.slang.api.ASTConverter;
 import org.sonarsource.slang.api.BinaryExpressionTree;
@@ -81,6 +82,7 @@ import org.sonarsource.slang.impl.ThrowTreeImpl;
 import org.sonarsource.slang.impl.TokenImpl;
 import org.sonarsource.slang.impl.TopLevelTreeImpl;
 import org.sonarsource.slang.impl.TreeMetaDataProvider;
+import org.sonarsource.slang.impl.VariableDeclarationTreeImpl;
 
 public class SJavaConverter implements ASTConverter {
 
@@ -190,14 +192,36 @@ public class SJavaConverter implements ASTConverter {
       case NULL_LITERAL:
         return new LiteralTreeImpl(metaData(t), "null");
       case EQUAL_TO: //TODO: add other binary
-        return new BinaryExpressionTreeImpl(metaData(t), BinaryExpressionTree.Operator.EQUAL_TO, keyword(((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t).operatorToken()),
-            convert(((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t).leftOperand()),
-            convert(((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t).rightOperand()));
-
+        return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.EQUAL_TO);
+      case OR:
+        return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.CONDITIONAL_OR);
+      case AND:
+        return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.CONDITIONAL_AND);
+      case VARIABLE:
+        return createVariableTree((VariableTree) t);
       default:
         return createNativeTree(t);
         // Ignore other kind of elements, no change of gen/kill
     }
+  }
+
+  private Tree createVariableTree(VariableTree t) {
+    IdentifierTree identifier = createIdentifierTree(t.simpleName());
+    Tree type = null;
+    Tree init = null;
+    if(t.initializer() != null){
+      init = convert(t.initializer());
+    }
+    if(t.type() != null){
+      type = convert(t.type());
+    }
+    return new VariableDeclarationTreeImpl(metaData(t), identifier, type, init,  false);
+  }
+
+  private Tree createBinaryExpression(org.sonar.plugins.java.api.tree.BinaryExpressionTree t, BinaryExpressionTree.Operator operator) {
+   return new BinaryExpressionTreeImpl(metaData(t), operator, keyword(t.operatorToken()),
+    convert(t.leftOperand()),
+    convert(t.rightOperand()));
   }
 
   private IdentifierTree createIdentifierTree(org.sonar.plugins.java.api.tree.IdentifierTree t) {

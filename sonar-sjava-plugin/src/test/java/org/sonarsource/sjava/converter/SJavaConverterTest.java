@@ -152,6 +152,19 @@ public class SJavaConverterTest {
     System.out.println(TreePrinter.table(t));
   }
 
+  @Test
+  public void test_ternary() {
+    String content = "class T {\n" +
+        "public void t(int i) {\n" +
+        "boolean b = (i == 1) ? true : false;" +
+        " }\n" +
+        "}\n";
+    Tree t = converter.parse(content);
+
+
+    System.out.println(TreePrinter.table(t));
+  }
+
   public static Tree parse(Path path) throws IOException {
     String code = new String(Files.readAllBytes(path), UTF_8);
     try {
