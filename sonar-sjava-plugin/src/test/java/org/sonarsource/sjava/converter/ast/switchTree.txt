@@ -25,12 +25,10 @@ TopLevelTree {                               | public … }        | 21:1 … 43
         IdentifierTree                       | t                 | 25:15 … 25:16
         VariableDeclarationTree {            | letter … l        | 25:17 … 25:25
           IdentifierTree                     | l                 | 25:24 … 25:25
-          IdentifierTree                     | letter            | 25:17 … 25:23
         }                                    |                   |              
         BlockTree {                          | { … }             | 25:27 … 40:4 
           VariableDeclarationTree {          | int … ;           | 26:5 … 26:15 
             IdentifierTree                   | i                 | 26:9 … 26:10 
-            ?PRIMITIVE_TYPE?                 | int               | 26:5 … 26:8  
             LiteralTree                      | 1                 | 26:13 … 26:14
           }                                  |                   |              
           MatchTree {                        | switch … }        | 27:5 … 38:6  

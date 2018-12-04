@@ -7,7 +7,6 @@ TopLevelTree {                             | public … }        | 20:1 … 37:1
         IdentifierTree                     | t                 | 21:15 … 21:16
         VariableDeclarationTree {          | int … i           | 21:17 … 21:22
           IdentifierTree                   | i                 | 21:21 … 21:22
-          ?PRIMITIVE_TYPE?                 | int               | 21:17 … 21:20
         }                                  |                   |              
         BlockTree {                        | { … }             | 21:24 … 34:4 
           LoopTree {                       | while … }         | 22:5 … 24:6  

@@ -102,7 +102,8 @@ public class SJavaConverter implements ASTConverter {
       return convert(t);
     } catch (RecognitionException e){
       throw new ParseException("Unable to parse file.");
-    } catch (NullPointerException np) {
+    }
+    catch (NullPointerException np) {
       throw new ParseException("Unable to parse file due to null pointer ex");
     }
   }
@@ -193,9 +194,9 @@ public class SJavaConverter implements ASTConverter {
         return new LiteralTreeImpl(metaData(t), "null");
       case EQUAL_TO: //TODO: add other binary
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.EQUAL_TO);
-      case OR:
+      case CONDITIONAL_OR:
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.CONDITIONAL_OR);
-      case AND:
+      case CONDITIONAL_AND:
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.CONDITIONAL_AND);
       case VARIABLE:
         return createVariableTree((VariableTree) t);
@@ -213,7 +214,7 @@ public class SJavaConverter implements ASTConverter {
       init = convert(t.initializer());
     }
     if(t.type() != null){
-      type = convert(t.type());
+      //TODO
     }
     return new VariableDeclarationTreeImpl(metaData(t), identifier, type, init,  false);
   }
