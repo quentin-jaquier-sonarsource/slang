@@ -44,7 +44,7 @@ public class SJavaConverterTest {
   public void all_java_files() throws IOException {
     for (Path javaPath : getJavaSources()) {
       Path astPath = Paths.get(javaPath.toString().replaceFirst("\\.java$", ".txt"));
-      String actualAst = TreePrinter.tree2string(parse(javaPath));
+      String actualAst = TreePrinter.table(parse(javaPath));
       String expectingAst = astPath.toFile().exists() ? new String(Files.readAllBytes(astPath), UTF_8) : "";
       assertThat(actualAst)
           .describedAs("In the file: " + astPath + " (run ApexConverterTest.main manually)")
@@ -59,7 +59,7 @@ public class SJavaConverterTest {
   private static void fix_all_java_files_test_automatically() throws IOException {
     for (Path javaPath : getJavaSources()) {
       Path astPath = Paths.get(javaPath.toString().replaceFirst("\\.java", ".txt"));
-      String actualAst = TreePrinter.tree2string(parse(javaPath));
+      String actualAst = TreePrinter.table(parse(javaPath));
       Files.write(astPath, actualAst.getBytes(UTF_8));
     }
   }
@@ -76,22 +76,36 @@ public class SJavaConverterTest {
 
   @Test
   public void test_in() {
-
     String content = "class T {\n" +
         "String s = \"aaaaabbbb\";  \n" +
-        "int a = 1; // comment \n" +
+        "int a, b; // comment \n" +
         "public boolean t(int i) {\n" +
         "if(p < 19) {\n" +
         " a = true || false;" +
         "}\n" +
         " while (p == null) {\n" +
-        "    break;" +
+        "    return;" +
         "   }\n" +
         "return false;\n" +
         " }\n" +
         "}\n";
     Tree t = converter.parse(content);
 
+    System.out.println(TreePrinter.table(t));
+  }
+
+  @Test
+  public void test_np() {
+
+    String content = "class T {\n" +
+        "public void t(int i) {\n" +
+        "p.toString();\n" +
+        "if(p == null) {\n" +
+        " a = true || false;" +
+        "}\n" +
+        " }\n" +
+        "}\n";
+    Tree t = converter.parse(content);
 
     System.out.println(TreePrinter.table(t));
   }
@@ -116,19 +130,11 @@ public class SJavaConverterTest {
     Tree t = converter.parse(content);
 
 
-    System.out.println(TreePrinter.tree2string(t));
+    System.out.println(TreePrinter.table(t));
   }
 
   @Test
   public void test_switch() {
-
-    String a = "";
-
-    switch(a) {
-
-
-    }
-
     String content = "class T {\n" +
         "int a = 1; // comment \n" +
         "public void t(int i) {\n" +
@@ -143,7 +149,7 @@ public class SJavaConverterTest {
     Tree t = converter.parse(content);
 
 
-    System.out.println(TreePrinter.tree2string(t));
+    System.out.println(TreePrinter.table(t));
   }
 
   public static Tree parse(Path path) throws IOException {

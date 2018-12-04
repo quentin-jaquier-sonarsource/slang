@@ -17,19 +17,16 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-public class functionInvocation {
-  public static Object q = "";
-
+public class nullPointerExampleCode {
   public void t(Object p) {
-    f(1,2,3);
     p.toString();
-    this.q.toString();
-    functionInvocation.q.toString();
-    this.f(1,2,3);
-  }
 
-  private int f(int i, int j, int k) {
-    return i + j + k;
+    if(p == null){ } // Noncompliant
+
+    p.toString();
+
+    p = new Object();
+    if(p == null){ } // Compliant
+
   }
 }
-

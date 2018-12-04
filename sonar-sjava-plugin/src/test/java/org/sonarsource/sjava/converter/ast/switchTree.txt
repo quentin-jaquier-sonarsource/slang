@@ -1,72 +1,95 @@
-TopLevelTreeImpl
-  ClassDeclarationTreeImpl
-    NativeTreeImpl CLASS
-      NativeTreeImpl ENUM
-        NativeTreeImpl MODIFIERS
-        IdentifierTreeImpl letter
-        NativeTreeImpl TYPE_PARAMETERS
-        NativeTreeImpl LIST
-        NativeTreeImpl ENUM_CONSTANT
-          NativeTreeImpl MODIFIERS
-          NativeTreeImpl NEW_CLASS
-            IdentifierTreeImpl A
-            NativeTreeImpl ARGUMENTS
-        NativeTreeImpl ENUM_CONSTANT
-          NativeTreeImpl MODIFIERS
-          NativeTreeImpl NEW_CLASS
-            IdentifierTreeImpl B
-            NativeTreeImpl ARGUMENTS
-        NativeTreeImpl ENUM_CONSTANT
-          NativeTreeImpl MODIFIERS
-          NativeTreeImpl NEW_CLASS
-            IdentifierTreeImpl C
-            NativeTreeImpl ARGUMENTS
-      FunctionDeclarationTreeImpl
-        NativeTreeImpl TOKEN
-        IdentifierTreeImpl t
-        NativeTreeImpl VARIABLE
-          NativeTreeImpl MODIFIERS
-          IdentifierTreeImpl letter
-          IdentifierTreeImpl l
-        BlockTreeImpl
-          NativeTreeImpl VARIABLE
-            NativeTreeImpl MODIFIERS
-            NativeTreeImpl PRIMITIVE_TYPE
-            IdentifierTreeImpl i
-            LiteralTreeImpl INT_LITERAL
-          MatchTreeImpl
-            IdentifierTreeImpl l
-            MatchCaseTreeImpl
-              NativeTreeImpl CASE_LABEL
-                IdentifierTreeImpl A
-              NativeTreeImpl CASE_GROUP
-                NativeTreeImpl EXPRESSION_STATEMENT
-                  AssignmentExpressionTreeImpl EQUAL
-                    IdentifierTreeImpl i
-                    LiteralTreeImpl INT_LITERAL
-                JumpTreeImpl
-            MatchCaseTreeImpl
-              NativeTreeImpl CASE_LABEL
-                IdentifierTreeImpl B
-              NativeTreeImpl CASE_GROUP
-                NativeTreeImpl EXPRESSION_STATEMENT
-                  AssignmentExpressionTreeImpl EQUAL
-                    IdentifierTreeImpl i
-                    LiteralTreeImpl INT_LITERAL
-            MatchCaseTreeImpl
-              NativeTreeImpl CASE_LABEL
-                IdentifierTreeImpl C
-              NativeTreeImpl CASE_GROUP
-                NativeTreeImpl EXPRESSION_STATEMENT
-                  AssignmentExpressionTreeImpl EQUAL
-                    IdentifierTreeImpl i
-                    LiteralTreeImpl INT_LITERAL
-                JumpTreeImpl
-            MatchCaseTreeImpl
-              NativeTreeImpl CASE_LABEL
-              NativeTreeImpl CASE_GROUP
-                NativeTreeImpl EXPRESSION_STATEMENT
-                  AssignmentExpressionTreeImpl EQUAL
-                    IdentifierTreeImpl i
-                    LiteralTreeImpl INT_LITERAL
-  NativeTreeImpl TOKEN
+AST node class                               | first…last tokens | line:col     
+---------------------------------------------|-------------------|--------------
+TopLevelTree {                               | public … }        | 21:1 … 43:1  
+  ClassDeclarationTree {                     | public … }        | 21:1 … 41:2  
+    ?CLASS? {                                | public … }        | 21:1 … 41:2  
+      ?ENUM? {                               | enum … }          | 22:3 … 23:11 
+        IdentifierTree                       | letter            | 22:8 … 22:14 
+        ?ENUM_CONSTANT? {                    | A … ,             | 23:5 … 23:7  
+          ?NEW_CLASS? {                      | A                 | 23:5 … 23:6  
+            IdentifierTree                   | A                 | 23:5 … 23:6  
+          }                                  |                   |              
+        }                                    |                   |              
+        ?ENUM_CONSTANT? {                    | B … ,             | 23:7 … 23:9  
+          ?NEW_CLASS? {                      | B                 | 23:7 … 23:8  
+            IdentifierTree                   | B                 | 23:7 … 23:8  
+          }                                  |                   |              
+        }                                    |                   |              
+        ?ENUM_CONSTANT? {                    | C                 | 23:9 … 23:10 
+          ?NEW_CLASS? {                      | C                 | 23:9 … 23:10 
+            IdentifierTree                   | C                 | 23:9 … 23:10 
+          }                                  |                   |              
+        }                                    |                   |              
+      }                                      |                   |              
+      FunctionDeclarationTree {              | public … }        | 25:3 … 40:4  
+        IdentifierTree                       | t                 | 25:15 … 25:16
+        ?VARIABLE? {                         | letter … l        | 25:17 … 25:25
+          IdentifierTree                     | letter            | 25:17 … 25:23
+          IdentifierTree                     | l                 | 25:24 … 25:25
+        }                                    |                   |              
+        BlockTree {                          | { … }             | 25:27 … 40:4 
+          ?VARIABLE? {                       | int … ;           | 26:5 … 26:15 
+            ?PRIMITIVE_TYPE?                 | int               | 26:5 … 26:8  
+            IdentifierTree                   | i                 | 26:9 … 26:10 
+            LiteralTree                      | 1                 | 26:13 … 26:14
+          }                                  |                   |              
+          MatchTree {                        | switch … }        | 27:5 … 38:6  
+            IdentifierTree                   | l                 | 27:12 … 27:13
+            MatchCaseTree {                  | case … ;          | 28:7 … 30:15 
+              ?CASE_LABEL? {                 | case … :          | 28:7 … 28:14 
+                IdentifierTree               | A                 | 28:12 … 28:13
+              }                              |                   |              
+              ?CASE_GROUP? {                 | case … ;          | 28:7 … 30:15 
+                ?EXPRESSION_STATEMENT? {     | i … ;             | 29:9 … 29:15 
+                  AssignmentExpressionTree { | i … 2             | 29:9 … 29:14 
+                    IdentifierTree           | i                 | 29:9 … 29:10 
+                    LiteralTree              | 2                 | 29:13 … 29:14
+                  }                          |                   |              
+                }                            |                   |              
+                JumpTree                     | break … ;         | 30:9 … 30:15 
+              }                              |                   |              
+            }                                |                   |              
+            MatchCaseTree {                  | case … ;          | 31:7 … 32:15 
+              ?CASE_LABEL? {                 | case … :          | 31:7 … 31:14 
+                IdentifierTree               | B                 | 31:12 … 31:13
+              }                              |                   |              
+              ?CASE_GROUP? {                 | case … ;          | 31:7 … 32:15 
+                ?EXPRESSION_STATEMENT? {     | i … ;             | 32:9 … 32:15 
+                  AssignmentExpressionTree { | i … 3             | 32:9 … 32:14 
+                    IdentifierTree           | i                 | 32:9 … 32:10 
+                    LiteralTree              | 3                 | 32:13 … 32:14
+                  }                          |                   |              
+                }                            |                   |              
+              }                              |                   |              
+            }                                |                   |              
+            MatchCaseTree {                  | case … ;          | 33:7 … 35:15 
+              ?CASE_LABEL? {                 | case … :          | 33:7 … 33:14 
+                IdentifierTree               | C                 | 33:12 … 33:13
+              }                              |                   |              
+              ?CASE_GROUP? {                 | case … ;          | 33:7 … 35:15 
+                ?EXPRESSION_STATEMENT? {     | i … ;             | 34:9 … 34:15 
+                  AssignmentExpressionTree { | i … 4             | 34:9 … 34:14 
+                    IdentifierTree           | i                 | 34:9 … 34:10 
+                    LiteralTree              | 4                 | 34:13 … 34:14
+                  }                          |                   |              
+                }                            |                   |              
+                JumpTree                     | break … ;         | 35:9 … 35:15 
+              }                              |                   |              
+            }                                |                   |              
+            MatchCaseTree {                  | default … ;       | 36:7 … 37:15 
+              ?CASE_LABEL?                   | default … :       | 36:7 … 36:15 
+              ?CASE_GROUP? {                 | default … ;       | 36:7 … 37:15 
+                ?EXPRESSION_STATEMENT? {     | i … ;             | 37:9 … 37:15 
+                  AssignmentExpressionTree { | i … 6             | 37:9 … 37:14 
+                    IdentifierTree           | i                 | 37:9 … 37:10 
+                    LiteralTree              | 6                 | 37:13 … 37:14
+                  }                          |                   |              
+                }                            |                   |              
+              }                              |                   |              
+            }                                |                   |              
+          }                                  |                   |              
+        }                                    |                   |              
+      }                                      |                   |              
+    }                                        |                   |              
+  }                                          |                   |              
+}                                            |                   |              

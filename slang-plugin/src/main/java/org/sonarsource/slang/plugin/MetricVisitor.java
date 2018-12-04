@@ -61,13 +61,15 @@ public class MetricVisitor extends TreeVisitor<InputFileContext> {
     this.noSonarFilter = noSonarFilter;
 
     register(TopLevelTree.class, (ctx, tree) -> {
-      tree.allComments().forEach(
-        comment -> addCommentMetrics(comment, commentLines, nosonarLines));
-      addExecutableLines(tree.declarations());
-      linesOfCode.addAll(tree.metaData().linesOfCode());
-      complexity = new CyclomaticComplexityVisitor().complexityTrees(tree).size();
-      statements = new StatementsVisitor().statements(tree);
-      cognitiveComplexity = new CognitiveComplexity(tree).value();
+      if(tree.metaData() != null) {
+        tree.allComments().forEach(
+            comment -> addCommentMetrics(comment, commentLines, nosonarLines));
+        addExecutableLines(tree.declarations());
+        linesOfCode.addAll(tree.metaData().linesOfCode());
+        complexity = new CyclomaticComplexityVisitor().complexityTrees(tree).size();
+        statements = new StatementsVisitor().statements(tree);
+        cognitiveComplexity = new CognitiveComplexity(tree).value();
+      }
     });
 
     register(FunctionDeclarationTree.class, (ctx, tree) -> {
@@ -88,7 +90,13 @@ public class MetricVisitor extends TreeVisitor<InputFileContext> {
       .filter(t -> !(t instanceof ClassDeclarationTree))
       .filter(t -> !(t instanceof FunctionDeclarationTree))
       .filter(t -> !(t instanceof BlockTree))
-      .forEach(t -> executableLines.add(t.metaData().textRange().start().line()));
+      .forEach(
+      t -> {
+        if(t.metaData() != null) {
+          executableLines.add(t.metaData().textRange().start().line());
+        }
+      }
+    );
   }
 
   @Override

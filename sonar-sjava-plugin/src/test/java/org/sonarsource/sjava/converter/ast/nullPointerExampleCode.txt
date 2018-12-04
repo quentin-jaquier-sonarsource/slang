@@ -1,0 +1,52 @@
+AST node class                         | first…last tokens | line:col     
+---------------------------------------|-------------------|--------------
+TopLevelTree {                         | public … }        | 20:1 … 33:1  
+  ClassDeclarationTree {               | public … }        | 20:1 … 32:2  
+    ?CLASS? {                          | public … }        | 20:1 … 32:2  
+      FunctionDeclarationTree {        | public … }        | 21:3 … 31:4  
+        IdentifierTree                 | t                 | 21:15 … 21:16
+        ?VARIABLE? {                   | Object … p        | 21:17 … 21:25
+          IdentifierTree               | Object            | 21:17 … 21:23
+          IdentifierTree               | p                 | 21:24 … 21:25
+        }                              |                   |              
+        BlockTree {                    | { … }             | 21:27 … 31:4 
+          ?EXPRESSION_STATEMENT? {     | p … ;             | 22:5 … 22:18 
+            FunctionInvocationTree {   | p … )             | 22:5 … 22:17 
+              IdentifierTree           | p                 | 22:5 … 22:6  
+              IdentifierTree           | toString          | 22:7 … 22:15 
+            }                          |                   |              
+          }                            |                   |              
+          IfTree {                     | if … }            | 24:5 … 24:21 
+            BinaryExpressionTree {     | p … null          | 24:8 … 24:17 
+              IdentifierTree           | p                 | 24:8 … 24:9  
+              LiteralTree              | null              | 24:13 … 24:17
+            }                          |                   |              
+            BlockTree                  | { … }             | 24:18 … 24:21
+          }                            |                   |              
+          ?EXPRESSION_STATEMENT? {     | p … ;             | 26:5 … 26:18 
+            FunctionInvocationTree {   | p … )             | 26:5 … 26:17 
+              IdentifierTree           | p                 | 26:5 … 26:6  
+              IdentifierTree           | toString          | 26:7 … 26:15 
+            }                          |                   |              
+          }                            |                   |              
+          ?EXPRESSION_STATEMENT? {     | p … ;             | 28:5 … 28:22 
+            AssignmentExpressionTree { | p … )             | 28:5 … 28:21 
+              IdentifierTree           | p                 | 28:5 … 28:6  
+              ?NEW_CLASS? {            | new … )           | 28:9 … 28:21 
+                IdentifierTree         | Object            | 28:13 … 28:19
+                ?ARGUMENTS?            | ( … )             | 28:19 … 28:21
+              }                        |                   |              
+            }                          |                   |              
+          }                            |                   |              
+          IfTree {                     | if … }            | 29:5 … 29:21 
+            BinaryExpressionTree {     | p … null          | 29:8 … 29:17 
+              IdentifierTree           | p                 | 29:8 … 29:9  
+              LiteralTree              | null              | 29:13 … 29:17
+            }                          |                   |              
+            BlockTree                  | { … }             | 29:18 … 29:21
+          }                            |                   |              
+        }                              |                   |              
+      }                                |                   |              
+    }                                  |                   |              
+  }                                    |                   |              
+}                                      |                   |              

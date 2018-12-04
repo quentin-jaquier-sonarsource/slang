@@ -40,15 +40,20 @@ public class SyntaxHighlighter extends TreeVisitor<InputFileContext> {
 
   public SyntaxHighlighter() {
     register(TopLevelTree.class, (ctx, tree) -> {
-      tree.allComments().forEach(
-        comment -> highlight(ctx, comment.textRange(), COMMENT));
-      tree.metaData().tokens().stream()
-        .filter(t -> t.type() == Token.Type.KEYWORD)
-        .forEach(token -> highlight(ctx, token.textRange(), KEYWORD));
+      if(tree.metaData() != null) {
+        tree.allComments().forEach(
+            comment -> highlight(ctx, comment.textRange(), COMMENT));
+        tree.metaData().tokens().stream()
+            .filter(t -> t.type() == Token.Type.KEYWORD)
+            .forEach(token -> highlight(ctx, token.textRange(), KEYWORD));
+      }
     });
 
-    register(LiteralTree.class, (ctx, tree) ->
-      highlight(ctx, tree.metaData().textRange(), tree instanceof StringLiteralTree ? STRING : CONSTANT));
+    register(LiteralTree.class, (ctx, tree) -> {
+      if(tree.metaData() != null){
+        highlight(ctx, tree.metaData().textRange(), tree instanceof StringLiteralTree ? STRING : CONSTANT);
+      }
+     });
   }
 
   @Override

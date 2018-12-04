@@ -1,62 +1,94 @@
-TopLevelTreeImpl
-  ClassDeclarationTreeImpl
-    NativeTreeImpl CLASS
-      FunctionDeclarationTreeImpl
-        NativeTreeImpl TOKEN
-        IdentifierTreeImpl t
-        NativeTreeImpl VARIABLE
-          NativeTreeImpl MODIFIERS
-          NativeTreeImpl PRIMITIVE_TYPE
-          IdentifierTreeImpl i
-        BlockTreeImpl
-          LoopTreeImpl
-            BinaryExpressionTreeImpl EQUAL_TO
-              IdentifierTreeImpl i
-              IdentifierTreeImpl i
-            BlockTreeImpl
-              NativeTreeImpl EXPRESSION_STATEMENT
-                AssignmentExpressionTreeImpl EQUAL
-                  IdentifierTreeImpl i
-                  LiteralTreeImpl INT_LITERAL
-              IfTreeImpl
-                BinaryExpressionTreeImpl EQUAL_TO
-                  IdentifierTreeImpl i
-                  LiteralTreeImpl INT_LITERAL
-                BlockTreeImpl
-                  JumpTreeImpl
-          LoopTreeImpl
-            BinaryExpressionTreeImpl EQUAL_TO
-              IdentifierTreeImpl i
-              LiteralTreeImpl INT_LITERAL
-            BlockTreeImpl
-              IfTreeImpl
-                BinaryExpressionTreeImpl EQUAL_TO
-                  IdentifierTreeImpl i
-                  LiteralTreeImpl INT_LITERAL
-                BlockTreeImpl
-                  JumpTreeImpl
-          LoopTreeImpl
-            NativeTreeImpl LESS_THAN
-              IdentifierTreeImpl j
-              LiteralTreeImpl INT_LITERAL
-            BlockTreeImpl
-              IfTreeImpl
-                BinaryExpressionTreeImpl EQUAL_TO
-                  IdentifierTreeImpl j
-                  LiteralTreeImpl INT_LITERAL
-                BlockTreeImpl
-                  ReturnTreeImpl
-                    NativeTreeImpl PLUS
-                      IdentifierTreeImpl j
-                      LiteralTreeImpl INT_LITERAL
-              NativeTreeImpl EXPRESSION_STATEMENT
-                AssignmentExpressionTreeImpl EQUAL
-                  IdentifierTreeImpl i
-                  NativeTreeImpl REMAINDER
-                    IdentifierTreeImpl j
-                    LiteralTreeImpl INT_LITERAL
-          ReturnTreeImpl
-            NativeTreeImpl PLUS
-              LiteralTreeImpl INT_LITERAL
-              IdentifierTreeImpl i
-  NativeTreeImpl TOKEN
+AST node class                             | first…last tokens | line:col     
+-------------------------------------------|-------------------|--------------
+TopLevelTree {                             | public … }        | 20:1 … 45:1  
+  ClassDeclarationTree {                   | public … }        | 20:1 … 43:2  
+    ?CLASS? {                              | public … }        | 20:1 … 43:2  
+      FunctionDeclarationTree {            | public … }        | 21:3 … 42:4  
+        IdentifierTree                     | t                 | 21:14 … 21:15
+        ?VARIABLE? {                       | int … i           | 21:16 … 21:21
+          ?PRIMITIVE_TYPE?                 | int               | 21:16 … 21:19
+          IdentifierTree                   | i                 | 21:20 … 21:21
+        }                                  |                   |              
+        BlockTree {                        | { … }             | 21:23 … 42:4 
+          LoopTree {                       | while … }         | 22:5 … 27:6  
+            BinaryExpressionTree {         | i … i             | 22:11 … 22:17
+              IdentifierTree               | i                 | 22:11 … 22:12
+              IdentifierTree               | i                 | 22:16 … 22:17
+            }                              |                   |              
+            BlockTree {                    | { … }             | 22:18 … 27:6 
+              ?EXPRESSION_STATEMENT? {     | i … ;             | 23:7 … 23:13 
+                AssignmentExpressionTree { | i … 1             | 23:7 … 23:12 
+                  IdentifierTree           | i                 | 23:7 … 23:8  
+                  LiteralTree              | 1                 | 23:11 … 23:12
+                }                          |                   |              
+              }                            |                   |              
+              IfTree {                     | if … }            | 24:7 … 26:8  
+                BinaryExpressionTree {     | i … 123           | 24:10 … 24:18
+                  IdentifierTree           | i                 | 24:10 … 24:11
+                  LiteralTree              | 123               | 24:15 … 24:18
+                }                          |                   |              
+                BlockTree {                | { … }             | 24:20 … 26:8 
+                  JumpTree                 | break … ;         | 25:9 … 25:15 
+                }                          |                   |              
+              }                            |                   |              
+            }                              |                   |              
+          }                                |                   |              
+          LoopTree {                       | do … ;            | 29:5 … 33:22 
+            BinaryExpressionTree {         | i … 1             | 33:14 … 33:20
+              IdentifierTree               | i                 | 33:14 … 33:15
+              LiteralTree                  | 1                 | 33:19 … 33:20
+            }                              |                   |              
+            BlockTree {                    | { … }             | 29:8 … 33:6  
+              IfTree {                     | if … }            | 30:7 … 32:8  
+                BinaryExpressionTree {     | i … 123           | 30:10 … 30:18
+                  IdentifierTree           | i                 | 30:10 … 30:11
+                  LiteralTree              | 123               | 30:15 … 30:18
+                }                          |                   |              
+                BlockTree {                | { … }             | 30:20 … 32:8 
+                  JumpTree                 | continue … ;      | 31:9 … 31:18 
+                }                          |                   |              
+              }                            |                   |              
+            }                              |                   |              
+          }                                |                   |              
+          LoopTree {                       | for … }           | 35:5 … 40:6  
+            ?LESS_THAN? {                  | j … 19            | 35:21 … 35:28
+              IdentifierTree               | j                 | 35:21 … 35:22
+              LiteralTree                  | 19                | 35:26 … 35:28
+            }                              |                   |              
+            BlockTree {                    | { … }             | 35:35 … 40:6 
+              IfTree {                     | if … }            | 36:7 … 38:8  
+                BinaryExpressionTree {     | j … 128           | 36:10 … 36:18
+                  IdentifierTree           | j                 | 36:10 … 36:11
+                  LiteralTree              | 128               | 36:15 … 36:18
+                }                          |                   |              
+                BlockTree {                | { … }             | 36:20 … 38:8 
+                  ReturnTree {             | return … ;        | 37:9 … 37:22 
+                    ?PLUS? {               | j … 1             | 37:16 … 37:21
+                      IdentifierTree       | j                 | 37:16 … 37:17
+                      LiteralTree          | 1                 | 37:20 … 37:21
+                    }                      |                   |              
+                  }                        |                   |              
+                }                          |                   |              
+              }                            |                   |              
+              ?EXPRESSION_STATEMENT? {     | i … ;             | 39:7 … 39:18 
+                AssignmentExpressionTree { | i … 10            | 39:7 … 39:17 
+                  IdentifierTree           | i                 | 39:7 … 39:8  
+                  ?REMAINDER? {            | j … 10            | 39:11 … 39:17
+                    IdentifierTree         | j                 | 39:11 … 39:12
+                    LiteralTree            | 10                | 39:15 … 39:17
+                  }                        |                   |              
+                }                          |                   |              
+              }                            |                   |              
+            }                              |                   |              
+          }                                |                   |              
+          ReturnTree {                     | return … ;        | 41:5 … 41:18 
+            ?PLUS? {                       | 0 … i             | 41:12 … 41:17
+              LiteralTree                  | 0                 | 41:12 … 41:13
+              IdentifierTree               | i                 | 41:16 … 41:17
+            }                              |                   |              
+          }                                |                   |              
+        }                                  |                   |              
+      }                                    |                   |              
+    }                                      |                   |              
+  }                                        |                   |              
+}                                          |                   |              

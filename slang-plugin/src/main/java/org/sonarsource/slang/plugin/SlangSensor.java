@@ -159,10 +159,11 @@ public abstract class SlangSensor implements Sensor {
       return Collections.singletonList(new ChecksVisitor(checks()));
     } else {
       return Arrays.asList(
-        new ChecksVisitor(checks()),
-        new MetricVisitor(fileLinesContextFactory, noSonarFilter),
-        new CpdVisitor(),
-        new SyntaxHighlighter());
+        new ChecksVisitor(checks())
+        //,new MetricVisitor(fileLinesContextFactory, noSonarFilter),
+        //new CpdVisitor(),
+        //new SyntaxHighlighter()
+      );
     }
   }
 }
