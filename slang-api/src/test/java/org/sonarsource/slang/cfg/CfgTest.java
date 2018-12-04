@@ -54,6 +54,44 @@ public class CfgTest {
 
 
   @Test
+  public void testOreAssign() {
+     /*
+      a = b || c;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("b"), identifier("c"))));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(2, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
+  }
+
+  @Test
+  public void testFunCall() {
+     /*
+      a = f(p == null);
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("b"), identifier("c"))));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(2, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
+  }
+
+  @Test
   public void testIf() {
      /*
       a = 1;

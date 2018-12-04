@@ -152,6 +152,9 @@ class ControlFlowGraphBuilder {
       return currentBlock;
     } else {
       if(tree != null) {
+        if(!tree.children().isEmpty()) {
+          currentBlock =  build(tree.children(), currentBlock);
+        }
         currentBlock.addElement(tree);
       }
       return currentBlock;
