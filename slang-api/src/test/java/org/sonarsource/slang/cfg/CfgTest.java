@@ -329,6 +329,7 @@ public class CfgTest {
   public void testReturn() {
      /*
        if(cond) {
+        aaa = 2222;
         return a || b;
        } else {
         b = 2;
@@ -339,7 +340,8 @@ public class CfgTest {
 
     body.add(simpleIfTree(
         identifier("cond"), //Cond
-        block(simpleReturn(binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("a"), identifier("b")))), //Then block
+        block(assignment(identifier("aaaa"), identifier("2222")),
+            simpleReturn(binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("a"), identifier("b")))), //Then block
         block(assignment(identifier("b"), identifier("2"))) //Else block
     ));
 
@@ -351,7 +353,27 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(5, cfg.blocks().size());
-    assertEquals(4, cfg.blocks().get(2).elements().size());
+    assertEquals(7, cfg.blocks().get(2).elements().size());
+    assertTrue(cfg.isReliable());
+  }
+
+  @Test
+  public void testReturnNative() {
+     /*
+       return [Native] {a || b}
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(simpleReturn(binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("a"), identifier("b")))); //Then block
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(2, cfg.blocks().size());
+    assertEquals(4, cfg.blocks().get(1).elements().size());
     assertTrue(cfg.isReliable());
   }
 

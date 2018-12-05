@@ -1,14 +1,41 @@
 class A {
 
-
-  int foo5(Object p, boolean b) {
-    p == null || p.toString(); // Noncompliant
+  int shortcircuit01(Object p, boolean b) {
+    p == null || p.toString(); // Compliant
+    if(p == null) {} // Compliant, the pointer use has been short circuited
   }
 
-  int foo5(Object p, boolean b) {
+  int shortcircuit01(Object p, boolean b) {
+    p == null || p.toString(); // Compliant
+    p.toString();
+    if(p == null) {} // Compliant, FN, see todo
+  }
+
+  int shortcircuit0(Object p, boolean b) {
+    if(p == null || (a || b) || p.toString().equals("a")){} // Compliant
+  }
+
+  int shortcircuit15(Object p, boolean b) {
+    if(p.toString().equals("a") || p == null){} // Noncompliant
+  }
+
+  int shortcircuit2(Object p, boolean b) {
     f(p == null, p.toString()); // Noncompliant
   }
 
+  int shortcircuit25(Object p, boolean b) {
+    f(p.toString(), p == null); // Noncompliant
+  }
+
+  int shortcircuit3(Object p, boolean b) {
+    p == null || p.toString(); // Compliant
+  }
+
+  int f(Object p, boolean b) {
+    p.toString();
+    p == null;// Compliant, FN
+    p = "";
+  }
 
   int foo5(Object p, boolean b) {
     if (!level.equals(levelImpl.toString())) {
@@ -94,13 +121,6 @@ class A {
     if(p == null) {} // Noncompliant
   }
 
-
-
-  int foo4(Object p, boolean b) {
-    //...
-    if(p == null || p.toString().equals("a")){} // Compliant
-  }
-
   int foo5(Object p, boolean b) {
     String p = new Object();
     //...
@@ -144,7 +164,7 @@ class A {
 
   int loop4(Object p, boolean b) {
     if(p.toString().equals("a")) {
-      while (p == null) { // Compliant, FN
+      while (p == null) { // Noncompliant
 
       }
     }
@@ -249,6 +269,10 @@ class A {
 
   //== Other =======================================
 
+  void inReturn(String p) {
+    p.toString();
+    return p == null; // Noncompliant
+  }
 
   void nullObject() {
     A a = new A();

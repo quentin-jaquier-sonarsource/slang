@@ -41,6 +41,7 @@ import org.sonarsource.slang.api.NativeTree;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.VariableDeclarationTree;
 import org.sonarsource.slang.cfg.CfgBlock;
+import org.sonarsource.slang.cfg.CfgPrinter;
 import org.sonarsource.slang.cfg.ControlFlowGraph;
 import org.sonarsource.slang.checks.api.CheckContext;
 import org.sonarsource.slang.checks.api.InitContext;
@@ -57,9 +58,7 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         NullTracking nullTracking = NullTracking.analyse(cfg);
 
         for (CfgBlock block : cfg.blocks()) {
-          if(block.isReliable()) {
-            block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx));
-          }
+          block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx));
         }
       }
     });
@@ -85,6 +84,7 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
 
       String pointerChecked;
 
+      //TODO: Support null == p correctly
       if(rhs.value().equals("null")){
         pointerChecked = lhs.name();
       } else if(lhs.name().equals("null")){
@@ -171,7 +171,9 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
     }
 
     private void processBlockElements(CfgBlock block, Set<String> blockKill, Set<String> blockGen) {
-      // process elements from bottom to top
+      // process elements from bottom to top: order matter because we are going to remove pointer
+      // from gen block (in assign and declaration)
+      Set<String> shortCircuited = new HashSet<>();
       for (Tree element : block.elements()) {
         if(element instanceof AssignmentExpressionTree){
           processAssignment((AssignmentExpressionTree) element, blockKill, blockGen);
@@ -179,8 +181,34 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
           processMethodInvocation((FunctionInvocationTree) element, blockGen);
         } else if(element instanceof VariableDeclarationTree){
           processVariable(((VariableDeclarationTree) element).identifier(), blockKill, blockGen);
+        } else if(element instanceof BinaryExpressionTree) {
+          String s = processBinaryExpression((BinaryExpressionTree)element, blockGen);
+          if(s != null){
+            shortCircuited.add(s);
+          }
         }
       }
+      blockGen.removeAll(shortCircuited);
+    }
+
+    private String processBinaryExpression(BinaryExpressionTree element, Set<String> blockGen) {
+      //Search for pointer check for null followed by their use to remove them from gen set
+      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_OR) && element.leftOperand() instanceof BinaryExpressionTree) {
+        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) element.leftOperand();
+        if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
+          IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
+          LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();
+          if(rhs.value().equals("null")){
+            //We found a pointer checked for null
+            return lhs.name();
+            //TODO: Remove only the one gen in the binop, not the one after the binop
+//            p == null || p.toString(); // Compliant
+//            p.toString();
+//            if(p == null) {} // Noncompliant, FN without this improvement
+          }
+        }
+      }
+      return null;
     }
 
     private void processVariable(IdentifierTree element, Set<String> blockKill, Set<String> blockGen) {

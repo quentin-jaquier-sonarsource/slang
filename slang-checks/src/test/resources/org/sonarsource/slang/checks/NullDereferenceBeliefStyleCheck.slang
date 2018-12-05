@@ -1,5 +1,10 @@
 
+fun foo(Object p) {
+    val p = q.toString();
+    val s = p.toString();
 
+    if(p == null) { }; // Noncompliant
+}
 
 //===========
 
