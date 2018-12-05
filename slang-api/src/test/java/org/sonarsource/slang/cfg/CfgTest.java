@@ -239,6 +239,8 @@ public class CfgTest {
 
     assertEquals(7, cfg.blocks().size());
     assertFalse(cfg.isReliable());
+
+    assertEquals(3, cfg.blocks().get(2).elements().size());
   }
 
   @Test
@@ -327,7 +329,7 @@ public class CfgTest {
   public void testReturn() {
      /*
        if(cond) {
-        return a;
+        return a || b;
        } else {
         b = 2;
        };
@@ -337,7 +339,7 @@ public class CfgTest {
 
     body.add(simpleIfTree(
         identifier("cond"), //Cond
-        block(simpleReturn(identifier("a"))), //Then block
+        block(simpleReturn(binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("a"), identifier("b")))), //Then block
         block(assignment(identifier("b"), identifier("2"))) //Else block
     ));
 
@@ -349,6 +351,7 @@ public class CfgTest {
     System.out.println(CfgPrinter.toDot(cfg));
 
     assertEquals(5, cfg.blocks().size());
+    assertEquals(4, cfg.blocks().get(2).elements().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -358,7 +361,7 @@ public class CfgTest {
        a = 1;
 
        try{
-        if(cond) {
+        if(cond2) {
           throw e;
         }
         b = 2;
@@ -385,7 +388,7 @@ public class CfgTest {
     tryBody.add(assignment(identifier("b"), identifier("2")));
 
     List<CatchTree> catchTrees = new ArrayList<>();
-    catchTrees.add(catchTree(identifier("f"), block(assignment(identifier("b"), identifier("2")))));
+    catchTrees.add(catchTree(identifier("f"), block(assignment(identifier("c"), identifier("3")))));
 
     body.add(exceptionHandlingTree(
         block(tryBody), //Cond
@@ -402,6 +405,8 @@ public class CfgTest {
 
     assertEquals(7, cfg.blocks().size());
     assertTrue(cfg.isReliable());
+    assertEquals(2, cfg.blocks().get(2).elements().size()); //Throw block: throw + identifier e
+    assertEquals(5, cfg.blocks().get(4).elements().size()); //catch block: 2 + 3
   }
 
   @Test
@@ -462,7 +467,7 @@ public class CfgTest {
     body.add(simpleIfTree(
         identifier("cond"), //Cond
 
-        block(simpleNative(null, assignment(identifier("b"), identifier("2")),assignment(identifier("b"), identifier("2")))), //Then block
+        block(simpleNative(null, assignment(identifier("b"), identifier("2")),assignment(identifier("c"), identifier("3")))), //Then block
         null //Else block
     ));
 
@@ -582,6 +587,62 @@ public class CfgTest {
 
     assertEquals(6, cfg.blocks().size());
     assertFalse(cfg.isReliable());
+  }
+
+  @Test
+  public void testMatchCondition() {
+     /*
+    match(a || b) {
+      case cond1:
+        a = 1;
+    }
+
+    d = 4;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    List<MatchCaseTree> cases = new ArrayList<>();
+    cases.add(matchCaseTree(identifier("cond1"), assignment(identifier("a"), identifier("1"))));
+
+    body.add(matchTree(binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("a"), identifier("b")), cases));
+
+    body.add(assignment(identifier("d"), identifier("4")));
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(4, cfg.blocks().size());
+
+    assertEquals(3, cfg.blocks().get(1).elements().size());
+  }
+
+  @Test
+  public void testIfCond() {
+     /*
+      if(a || b) {
+        b = 2;
+        b = 2;
+      }
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(simpleIfTree(
+        binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("a"), identifier("b")), //Cond
+        block(assignment(identifier("b"), identifier("2")),assignment(identifier("b"), identifier("2"))), //Then block
+        null //Else block
+    ));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(3, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
+    assertEquals(3, cfg.blocks().get(1).elements().size());
   }
 
   @Test

@@ -35,6 +35,7 @@ import java.util.Set;
 
 import java.util.stream.Collectors;
 import org.sonarsource.slang.api.BlockTree;
+import org.sonarsource.slang.api.CatchTree;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.JumpTree;
@@ -138,13 +139,13 @@ class ControlFlowGraphBuilder {
     } else if(tree instanceof NativeTree) {
       if(tree.children().isEmpty()){
         currentBlock.addElement(tree);
-      } else if(tree.children().size() == 1){
+      } else if(tree.children().size() == 1) {
         //Add the child independently
         build(tree.children(), currentBlock);
       } else {
         makeUnreliable(currentBlock);
         reliableSubFlow = false;
-        SlangCfgBlock nativeB = buildSubFlow(tree.children(), currentBlock);
+        SlangCfgBlock nativeB = build(tree.children(), currentBlock);
         nativeB.notReliable();
         reliableSubFlow = true;
         return nativeB;
@@ -179,7 +180,7 @@ class ControlFlowGraphBuilder {
     }
 
     SlangCfgBlock condition = createMultiSuccessorBlock(cases);
-    condition.addElement(tree.expression());
+    build(tree.expression(), condition);
 
     return condition;
   }
@@ -198,7 +199,8 @@ class ControlFlowGraphBuilder {
     }
     removeBreakable();
     SlangCfgBlock block = createSimpleBlock(nextCase);
-    block.addElement(tree.expression());
+    build(tree.expression(), block);
+
     return block;
   }
 
@@ -263,13 +265,13 @@ class ControlFlowGraphBuilder {
     SlangCfgBlock finallyBlockEnd = createMultiSuccessorBlock(ImmutableSet.of(successor, exitBlock));
     SlangCfgBlock finallyBlock;
     if (tree.finallyBlock() != null) {
-      finallyBlock = build(tree.finallyBlock().children(), finallyBlockEnd);
+      finallyBlock = build(tree.finallyBlock(), finallyBlockEnd);
     } else {
       finallyBlock = finallyBlockEnd;
     }
 
     List<SlangCfgBlock> catchBlocks = tree.catchBlocks().stream()
-        .map(catchBlockTree -> buildSubFlow(catchBlockTree.catchBlock(), finallyBlock))
+        .map(catchBlockTree -> buildCatchBlock(catchBlockTree, finallyBlock))
         .collect(Collectors.toList());
 
     if (catchBlocks.isEmpty()) {
@@ -290,16 +292,25 @@ class ControlFlowGraphBuilder {
     return tryBodyStartingBlock;
   }
 
+  private SlangCfgBlock buildCatchBlock(CatchTree catchBlock, SlangCfgBlock block) {
+    SlangCfgBlock cfgBlock = buildSubFlow(catchBlock.catchBlock(), block);
+    build(catchBlock.catchParameter(), cfgBlock);
+    cfgBlock.addElement(catchBlock);
+    return cfgBlock;
+  }
+
   private SlangCfgBlock buildThrowStatement(ThrowTree tree, SlangCfgBlock successor) {
     // taking "latest" throw target is an estimation
     // In real a matching `catch` clause should be found (by exception type)
     SlangCfgBlock simpleBlock = createBlockWithSyntacticSuccessor(throwTargets.peek(), successor);
+    build(tree.body(), simpleBlock);
     simpleBlock.addElement(tree);
     return simpleBlock;
   }
 
   private SlangCfgBlock buildReturnStatement(ReturnTree tree, SlangCfgBlock successor) {
     SlangCfgBlock simpleBlock = createBlockWithSyntacticSuccessor(exitTargets.peek().exitBlock, successor);
+    build(tree.body(), simpleBlock);
     simpleBlock.addElement(tree);
     return simpleBlock;
   }
@@ -327,7 +338,7 @@ class ControlFlowGraphBuilder {
     ForwardingBlock linkToBody = createForwardingBlock();
     SlangCfgBranchingBlock conditionBlock = createBranchingBlock(tree, linkToBody, successor);
 
-    conditionBlock.addElement(tree.condition());
+    build(tree.condition(), conditionBlock);
 
     addBreakable(successor, conditionBlock);
     SlangCfgBlock loopBodyBlock = buildSubFlow(ImmutableList.of(tree.body()), conditionBlock);
@@ -346,7 +357,7 @@ class ControlFlowGraphBuilder {
 
     SlangCfgBranchingBlock conditionBlock = createBranchingBlock(tree, loopBodyBlock, successor);
 
-    conditionBlock.addElement(tree.condition());
+    build(tree.condition(), conditionBlock);
     linkToCondition.setSuccessor(conditionBlock);
     return createSimpleBlock(conditionBlock);
   }
@@ -359,7 +370,7 @@ class ControlFlowGraphBuilder {
     }
     SlangCfgBlock trueBlock = buildSubFlow(tree.thenBranch(), successor);
     SlangCfgBranchingBlock conditionBlock = createBranchingBlock(tree, trueBlock, falseBlock);
-    conditionBlock.addElement(tree.condition());
+    build(tree.condition(), conditionBlock);
     return conditionBlock;
   }
 
