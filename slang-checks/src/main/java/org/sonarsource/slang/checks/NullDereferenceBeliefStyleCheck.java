@@ -58,7 +58,9 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         NullTracking nullTracking = NullTracking.analyse(cfg);
 
         for (CfgBlock block : cfg.blocks()) {
-          block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx));
+          if(block.isReliable()) {
+            block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx));
+          }
         }
       }
     });

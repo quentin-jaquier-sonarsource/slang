@@ -1,5 +1,30 @@
 class A {
 
+  int loop0(Object p, boolean b) {
+    for(int i = 0; i < 10; i ++){
+      p.toString();
+    }
+    if(p == null){ } // Compliant, a path (entry) have not used p
+  }
+
+  int foo3(Object p, boolean b) {
+    p.toString(); //Add the belief that p is not null
+    p = new Object();
+    //...
+    if(p == null) {} // Compliant
+  }
+
+  int foo4(Object p, boolean b) {
+    String s = (p == null) ? "" : p.toString(); // Compliant
+  }
+
+  int foo5(Object p, boolean b) {
+    q.fun(p.toString());
+    if(p == null) { } // Noncompliant
+  }
+
+  //== Short circuit ===================================================
+
   int shortcircuit01(Object p, boolean b) {
     p == null || p.toString(); // Compliant
     if(p == null) {} // Compliant, the pointer use has been short circuited
@@ -12,10 +37,14 @@ class A {
   }
 
   int shortcircuit0(Object p, boolean b) {
-    if(p == null || (a || b) || p.toString().equals("a")){} // Compliant
+    if(p == null || (a || b) || p.toString()){} // Compliant
   }
 
   int shortcircuit15(Object p, boolean b) {
+    if(p.equals("a") || p == null){} // Noncompliant
+  }
+
+  int shortcircuit152(Object p, boolean b) {
     if(p.toString().equals("a") || p == null){} // Noncompliant
   }
 
@@ -33,17 +62,16 @@ class A {
 
   int f(Object p, boolean b) {
     p.toString();
-    p == null;// Compliant, FN
+    p == null;// Compliant, FN, it works with a IF because the next line will be in another block
+    //This may seems bad, but we initially want to find check in if, finding this kind of checks is only bonus
     p = "";
   }
 
   int foo5(Object p, boolean b) {
     if (!level.equals(levelImpl.toString())) {
-      //check custom level map
       if (levelImpl == null) { // Noncompliant
         levelImpl = Level.DEBUG;
         getLogger().debug("found unexpected level: " + level + ", logger: " + logger.getName() + ", msg: " + message);
-        //make sure the text that couldn't match a level is added to the message
         message = level + " " + message;
       }
     }
@@ -52,11 +80,6 @@ class A {
   int foo5(Object p, boolean b) {
     q.fun(p.toString());
     if(p == null) { } // Noncompliant
-  }
-
-  int foo4(Object p, boolean b) {
-    String s = (p == null) ? "" : p.toString(); // Noncompliant
-    //FP
   }
 
   int foo3(Object p, boolean b) {
@@ -68,13 +91,11 @@ class A {
 
   int noIf(Object p) {
     x = p.toString();
-
     boolean b = p == null; // Noncompliant
   }
 
   int noIf(Object p) {
     p.toString();
-
     boolean b = p == null; // Noncompliant
   }
 
@@ -85,7 +106,7 @@ class A {
 
   int compliant(Object p, boolean b) {
     if(p == null){ } //Compliant
-    p.toString(); //Compliant,even though we have not assign p
+    p.toString(); //Compliant, even though we have not assign p
   }
 
   int compliant2(Object p, boolean b) {
@@ -115,7 +136,7 @@ class A {
   }
 
   int foo2(Object p, boolean b) {
-    p = new Object();
+    p = "";
     p.toString(); //Add the belief that p is not null
     //...
     if(p == null) {} // Noncompliant
@@ -129,6 +150,21 @@ class A {
 
   //== LOOP ===================================================
 
+  int loop0(Object p, boolean b) {
+    for(int i = 0; i < 10; i ++){
+      p.toString();
+    }
+    if(p == null){ } // Compliant, a path (entry) have not used p
+  }
+
+  int loop0(Object p, boolean b) {
+    p.toString();
+    for(int i = 0; i < 10; i ++){
+      b = false;
+    }
+    if(p == null){ } // Noncompliant
+  }
+
   int loop(Object p, boolean b) {
     b = false;
     for(int i = 0; i < 10; i ++){
@@ -137,7 +173,7 @@ class A {
     }
   }
 
-  int loop(Object p, boolean b) {
+  int loop1(Object p, boolean b) {
     b = false;
     for(int i = 0; i < 10; i ++){
       if(p == null){ } // Compliant
@@ -277,7 +313,7 @@ class A {
   void nullObject() {
     A a = new A();
 
-    a.getS().equals("a");
+    a.equals("a");
 
     if(a == null){ // Noncompliant
 
