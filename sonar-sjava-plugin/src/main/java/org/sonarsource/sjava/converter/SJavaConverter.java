@@ -41,6 +41,7 @@ import org.sonar.plugins.java.api.tree.MemberSelectExpressionTree;
 import org.sonar.plugins.java.api.tree.MethodInvocationTree;
 import org.sonar.plugins.java.api.tree.MethodTree;
 import org.sonar.plugins.java.api.tree.ModifierTree;
+import org.sonar.plugins.java.api.tree.ParenthesizedTree;
 import org.sonar.plugins.java.api.tree.ReturnStatementTree;
 import org.sonar.plugins.java.api.tree.SwitchStatementTree;
 import org.sonar.plugins.java.api.tree.SyntaxToken;
@@ -76,6 +77,7 @@ import org.sonarsource.slang.impl.LoopTreeImpl;
 import org.sonarsource.slang.impl.MatchCaseTreeImpl;
 import org.sonarsource.slang.impl.MatchTreeImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
+import org.sonarsource.slang.impl.ParenthesizedExpressionTreeImpl;
 import org.sonarsource.slang.impl.ReturnTreeImpl;
 import org.sonarsource.slang.impl.TextRangeImpl;
 import org.sonarsource.slang.impl.ThrowTreeImpl;
@@ -202,6 +204,10 @@ public class SJavaConverter implements ASTConverter {
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.CONDITIONAL_AND);
       case VARIABLE:
         return createVariableTree((VariableTree) t);
+      case PARENTHESIZED_EXPRESSION:
+        return new ParenthesizedExpressionTreeImpl(metaData(t), convert(((ParenthesizedTree)t).expression()),
+            keyword(((ParenthesizedTree) t).openParenToken()),
+            keyword(((ParenthesizedTree) t).closeParenToken()));
       default:
         return createNativeTree(t);
         // Ignore other kind of elements, no change of gen/kill

@@ -47,6 +47,8 @@ import org.sonarsource.slang.checks.api.CheckContext;
 import org.sonarsource.slang.checks.api.InitContext;
 import org.sonarsource.slang.checks.api.SlangCheck;
 
+import static org.sonarsource.slang.checks.utils.ExpressionUtils.skipParentheses;
+
 @Rule(key = "S12345678")
 public class NullDereferenceBeliefStyleCheck implements SlangCheck {
 
@@ -57,25 +59,27 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         ControlFlowGraph cfg = ControlFlowGraph.build(functionDeclarationTree);
         NullTracking nullTracking = NullTracking.analyse(cfg);
 
+        System.out.println(CfgPrinter.toDot(cfg));
+
         for (CfgBlock block : cfg.blocks()) {
-          if(block.isReliable()) {
-            block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx));
-          }
+//          if(block.isReliable()) {
+            block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx, cfg));
+//          }
         }
       }
     });
   }
 
-  private void checkElement(Tree element, Set<String> out, CheckContext ctx) {
+  private void checkElement(Tree element, Set<String> out, CheckContext ctx, ControlFlowGraph cfg) {
     if(element instanceof BinaryExpressionTree){
       BinaryExpressionTree binOp = (BinaryExpressionTree) element;
       if(binOp.operator().equals(BinaryExpressionTree.Operator.EQUAL_TO)){
-        processEqualTo(binOp, out, ctx);
+        processEqualTo(binOp, out, ctx, cfg);
       }
     }
   }
 
-  private void processEqualTo(BinaryExpressionTree element, Set<String> out, CheckContext ctx) {
+  private void processEqualTo(BinaryExpressionTree element, Set<String> out, CheckContext ctx, ControlFlowGraph cfg) {
     if(element.rightOperand() instanceof LiteralTree) {
       IdentifierTree lhs = NullTracking.getIdentifierIfPresent(element.leftOperand());
       if(lhs == null){
@@ -96,6 +100,7 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       }
 
       if(out.contains(pointerChecked)) {
+        System.out.println(CfgPrinter.toDot(cfg));
         ctx.reportIssue(element, "This check is either always false, or a null pointer has been raised before.");
       }
     }
@@ -180,11 +185,14 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         if(element instanceof AssignmentExpressionTree){
           processAssignment((AssignmentExpressionTree) element, blockKill, blockGen);
         } else if(element instanceof FunctionInvocationTree){
-          processMethodInvocation((FunctionInvocationTree) element, blockGen);
+          //Gen only in reliable block (not in native)
+          if(block.isReliable()) {
+            processMethodInvocation((FunctionInvocationTree) element, blockGen);
+          }
         } else if(element instanceof VariableDeclarationTree){
           processVariable(((VariableDeclarationTree) element).identifier(), blockKill, blockGen);
         } else if(element instanceof BinaryExpressionTree) {
-          String s = processBinaryExpression((BinaryExpressionTree)element, blockGen);
+          String s = processBinaryExpression((BinaryExpressionTree)element);
           if(s != null){
             shortCircuited.add(s);
           }
@@ -193,10 +201,11 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       blockGen.removeAll(shortCircuited);
     }
 
-    private String processBinaryExpression(BinaryExpressionTree element, Set<String> blockGen) {
+    private String processBinaryExpression(BinaryExpressionTree element) {
       //Search for pointer check for null followed by their use to remove them from gen set
-      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_OR) && element.leftOperand() instanceof BinaryExpressionTree) {
-        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) element.leftOperand();
+      Tree firstLhs = skipParentheses(element.leftOperand());
+      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_OR) && firstLhs instanceof BinaryExpressionTree) {
+        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) firstLhs;
         if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
           IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
           LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();
@@ -211,8 +220,8 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         }
       }
       // AND short circuit
-      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_AND) && element.leftOperand() instanceof BinaryExpressionTree) {
-        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) element.leftOperand();
+      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_AND) && firstLhs instanceof BinaryExpressionTree) {
+        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) firstLhs;
         if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.NOT_EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
           IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
           LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();

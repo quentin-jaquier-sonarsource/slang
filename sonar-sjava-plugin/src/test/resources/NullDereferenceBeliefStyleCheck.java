@@ -1,15 +1,8 @@
 class A {
 
-  int shortcircuitAnd01(Object p, boolean b) {
-    p != null && p.toString(); // Compliant
+  int shortcircuit01(Object p, boolean b) {
+    ((p == null)) || p.toString(); // Compliant
     if(p == null) {} // Compliant, the pointer use has been short circuited
-  }
-
-  int loop0(Object p, boolean b) {
-    for(int i = 0; i < 10; i ++){
-      p.toString();
-    }
-    if(p == null){ } // Compliant, a path (entry) have not used p
   }
 
   int foo3(Object p, boolean b) {
@@ -23,12 +16,46 @@ class A {
     String s = (p == null) ? "" : p.toString(); // Compliant
   }
 
+  int foo4(Object p, boolean b) {
+    String s = (p == null) ? "" : p.toString(); // Compliant
+    if(p == null) {} // Compliant
+  }
+
+  int foo4(Object p, boolean b) {
+    p.toString();
+    String s = (p == null) ? "" : q.toString(); // Noncompliant
+  }
+
+  int foo41(Object p, boolean b) {
+    String s = false ? "" : p.toString(); // Compliant
+    if(p == null) {} // Compliant
+  }
+
   int foo5(Object p, boolean b) {
     q.fun(p.toString());
     if(p == null) { } // Noncompliant
   }
 
+  int assign(Object p, boolean b) {
+    foo6 = p.toString();
+    if(p == null) {} // Noncompliant
+  }
+
+  int assign2(Object p, boolean b) {
+    p = p.toString();
+    if(p == null) {} // Compliant
+  }
+
+  int foo4(Object p, boolean b) {
+    String s = a ? p.f(q.toString()) : (q == null);
+  }
+
   //== Short circuit ===================================================
+
+  int shortcircuitAnd01(Object p, boolean b) {
+    p != null && p.toString(); // Compliant
+    if(p == null) {} // Compliant, the call to the fun has not been made
+  }
 
   int shortcircuitAnd01(Object p, boolean b) {
     p != null && p.toString(); // Compliant
@@ -55,7 +82,7 @@ class A {
   }
 
   int shortcircuit152(Object p, boolean b) {
-    if(p.toString().equals("a") || p == null){} // Noncompliant
+    if(p.toString().equals("a") || p == null){} // Compliant, multiple method select are not supported
   }
 
   int shortcircuit2(Object p, boolean b) {
@@ -168,6 +195,13 @@ class A {
   }
 
   int loop0(Object p, boolean b) {
+    for(int i = 0; i < p.toString(); i ++){
+
+    }
+    if(p == null){ } // Compliant, FN, the check is in a native node
+  }
+
+  int loop0(Object p, boolean b) {
     p.toString();
     for(int i = 0; i < 10; i ++){
       b = false;
@@ -210,12 +244,11 @@ class A {
 
   int loop4(Object p, boolean b) {
     if(p.toString().equals("a")) {
-      while (p == null) { // Noncompliant
+      while (p == null) { // Compliant, multiple method select are not supported
 
       }
     }
   }
-
 
   int loop5(Object p, boolean b) {
     p.toString();
@@ -370,7 +403,17 @@ class A {
     void changeS() {
       s = null;
     }
+  }
 
+  //== In code =======================================
+
+  public boolean accept(long value) {
+    return ((valids == null) || (valids.contains(value))) && ((invalids == null) || (!invalids.contains(value))); // Compliant
+  }
+
+  public boolean equals(Object o) {
+    return a ? Objects.equals(dateTimeFormatter.locale(), that.dateTimeFormatter.locale())
+        : dateTimeFormatter == null; // Compliant
   }
 
 }
