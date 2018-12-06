@@ -1,5 +1,10 @@
 class A {
 
+  int shortcircuitAnd01(Object p, boolean b) {
+    p != null && p.toString(); // Compliant
+    if(p == null) {} // Compliant, the pointer use has been short circuited
+  }
+
   int loop0(Object p, boolean b) {
     for(int i = 0; i < 10; i ++){
       p.toString();
@@ -24,6 +29,11 @@ class A {
   }
 
   //== Short circuit ===================================================
+
+  int shortcircuitAnd01(Object p, boolean b) {
+    p != null && p.toString(); // Compliant
+    if(p == null) {} // Compliant, the pointer use has been short circuited
+  }
 
   int shortcircuit01(Object p, boolean b) {
     p == null || p.toString(); // Compliant

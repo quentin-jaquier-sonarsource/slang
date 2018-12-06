@@ -192,6 +192,8 @@ public class SJavaConverter implements ASTConverter {
         return new LiteralTreeImpl(metaData(t), t.kind().toString());
       case NULL_LITERAL:
         return new LiteralTreeImpl(metaData(t), "null");
+      case NOT_EQUAL_TO:
+        return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.NOT_EQUAL_TO);
       case EQUAL_TO: //TODO: add other binary
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.EQUAL_TO);
       case CONDITIONAL_OR:

@@ -210,6 +210,19 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
           }
         }
       }
+      // AND short circuit
+      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_AND) && element.leftOperand() instanceof BinaryExpressionTree) {
+        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) element.leftOperand();
+        if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.NOT_EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
+          IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
+          LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();
+          if(rhs.value().equals("null")){
+            //We found a pointer checked for null
+            return lhs.name();
+            //TODO: Remove only the one gen in the binop, not the one after the binop
+          }
+        }
+      }
       return null;
     }
 
