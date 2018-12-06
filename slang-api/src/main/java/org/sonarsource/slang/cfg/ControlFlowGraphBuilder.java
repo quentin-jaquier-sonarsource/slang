@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import java.util.stream.Collectors;
+import org.sonarsource.slang.api.AssignmentExpressionTree;
 import org.sonarsource.slang.api.BlockTree;
 import org.sonarsource.slang.api.CatchTree;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
@@ -62,7 +63,7 @@ class ControlFlowGraphBuilder {
 
   private boolean reliable = true;
 
-  private boolean reliableSubFlow = true;
+  private int reliableSubFlow = 0;
 
   public ControlFlowGraphBuilder(List<? extends Tree> items) {
     throwTargets.push(end);
@@ -108,7 +109,7 @@ class ControlFlowGraphBuilder {
     SlangCfgBlock currentBlock = successor;
     for (Tree tree : Lists.reverse(trees)) {
       //Break the current block if the next part is unreliable (and not still in unreliable block)
-      if(!currentBlock.isReliable() && reliableSubFlow){
+      if(!currentBlock.isReliable() && (reliableSubFlow == 0)){
         currentBlock = createSimpleBlock(currentBlock);
       }
       currentBlock = build(tree, currentBlock);
@@ -118,7 +119,7 @@ class ControlFlowGraphBuilder {
   }
 
   private SlangCfgBlock build(Tree tree, SlangCfgBlock currentBlock) {
-    if(!reliableSubFlow){
+    if(!(reliableSubFlow == 0)){
       makeUnreliable(currentBlock);
     }
     if(tree instanceof MatchTree) {
@@ -137,6 +138,8 @@ class ControlFlowGraphBuilder {
       return buildThrowStatement((ThrowTree) tree, currentBlock);
     } else if(tree instanceof ExceptionHandlingTree) {
       return buildExceptionHandling((ExceptionHandlingTree)tree, currentBlock);
+    } else if(tree instanceof AssignmentExpressionTree) {
+      return buildAssignmentExpression((AssignmentExpressionTree) tree, currentBlock);
     } else if(tree instanceof NativeTree) {
       if(tree.children().isEmpty()){
         currentBlock.addElement(tree);
@@ -145,9 +148,9 @@ class ControlFlowGraphBuilder {
         //Add the child independently
         return build(tree.children(), currentBlock);
       } else {
-        reliableSubFlow = false;
+        reliableSubFlow ++;
         SlangCfgBlock nativeB = buildSubFlow(tree.children(), currentBlock);
-        reliableSubFlow = true;
+        reliableSubFlow --;
         return nativeB;
       }
     } else {
@@ -159,6 +162,14 @@ class ControlFlowGraphBuilder {
       }
       return currentBlock;
     }
+  }
+
+  private SlangCfgBlock buildAssignmentExpression(AssignmentExpressionTree tree, SlangCfgBlock currentBlock) {
+    //Add the rhs last in the node (will be first since we build the cfg bot-up)
+    SlangCfgBlock assignBlock = build(tree.leftHandSide(), currentBlock);
+    assignBlock.addElement(tree);
+    return build(tree.statementOrExpression(), assignBlock);
+
   }
 
   private SlangCfgBlock buildMatchTree(MatchTree tree, SlangCfgBlock successor){
@@ -394,7 +405,7 @@ class ControlFlowGraphBuilder {
       currentSubFlow = build(subFlowTree, createSimpleBlock(successor));
     }
 
-    if(!reliableSubFlow) {
+    if(!(reliableSubFlow == 0)) {
       makeUnreliable(currentSubFlow);
     }
     return currentSubFlow;
@@ -402,7 +413,7 @@ class ControlFlowGraphBuilder {
 
   private SlangCfgBlock buildSubFlow(List<Tree> subFlowTree, SlangCfgBlock successor) {
     SlangCfgBlock currentSubFlow = build(subFlowTree, createSimpleBlock(successor));
-    if(!reliableSubFlow) {
+    if(!(reliableSubFlow == 0)) {
       makeUnreliable(currentSubFlow);
     }
     return currentSubFlow;
