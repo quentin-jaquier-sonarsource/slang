@@ -30,6 +30,7 @@ import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.MatchCaseTree;
 import org.sonarsource.slang.api.Tree;
+import org.sonarsource.slang.visitors.TreePrinter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -39,6 +40,7 @@ import static org.sonarsource.slang.utils.TreeCreationUtils.binary;
 import static org.sonarsource.slang.utils.TreeCreationUtils.block;
 import static org.sonarsource.slang.utils.TreeCreationUtils.identifier;
 import static org.sonarsource.slang.utils.TreeCreationUtils.jumpTree;
+import static org.sonarsource.slang.utils.TreeCreationUtils.leafNative;
 import static org.sonarsource.slang.utils.TreeCreationUtils.loop;
 import static org.sonarsource.slang.utils.TreeCreationUtils.matchCaseTree;
 import static org.sonarsource.slang.utils.TreeCreationUtils.matchTree;
@@ -68,7 +70,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(2, cfg.blocks().size());
+    assertEquals(3, cfg.blocks().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -87,7 +89,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(2, cfg.blocks().size());
+    assertEquals(3, cfg.blocks().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -114,7 +116,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(3, cfg.blocks().size());
+    assertEquals(4, cfg.blocks().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -148,7 +150,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(4, cfg.blocks().size());
+    assertEquals(5, cfg.blocks().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -186,7 +188,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(4, cfg.blocks().size());
+    assertEquals(5, cfg.blocks().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -216,7 +218,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(5, cfg.blocks().size());
+    assertEquals(6, cfg.blocks().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -227,7 +229,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(7, cfg.blocks().size());
+    assertEquals(8, cfg.blocks().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -237,7 +239,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(7, cfg.blocks().size());
+    assertEquals(9, cfg.blocks().size());
     assertFalse(cfg.isReliable());
 
     assertEquals(3, cfg.blocks().get(2).elements().size());
@@ -249,7 +251,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(7, cfg.blocks().size());
+    assertEquals(8, cfg.blocks().size());
     assertTrue(cfg.isReliable());
   }
   private ControlFlowGraph whileWithJumpCfg(JumpTree.JumpKind kind) {
@@ -321,7 +323,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(5, cfg.blocks().size());
+    assertEquals(6, cfg.blocks().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -352,8 +354,8 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(5, cfg.blocks().size());
-    assertEquals(7, cfg.blocks().get(2).elements().size());
+    assertEquals(6, cfg.blocks().size());
+    assertEquals(7, cfg.blocks().get(3).elements().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -372,8 +374,8 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(2, cfg.blocks().size());
-    assertEquals(4, cfg.blocks().get(1).elements().size());
+    assertEquals(3, cfg.blocks().size());
+    assertEquals(4, cfg.blocks().get(2).elements().size());
     assertTrue(cfg.isReliable());
   }
 
@@ -425,10 +427,10 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(7, cfg.blocks().size());
+    assertEquals(8, cfg.blocks().size());
     assertTrue(cfg.isReliable());
-    assertEquals(2, cfg.blocks().get(2).elements().size()); //Throw block: throw + identifier e
-    assertEquals(5, cfg.blocks().get(4).elements().size()); //catch block: 2 + 3
+    assertEquals(2, cfg.blocks().get(3).elements().size()); //Throw block: throw + identifier e
+    assertEquals(5, cfg.blocks().get(5).elements().size()); //catch block: 2 + 3
   }
 
   @Test
@@ -469,8 +471,34 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(6, cfg.blocks().size());
+    assertEquals(7, cfg.blocks().size());
     assertTrue(cfg.isReliable());
+  }
+
+  @Test
+  public void testTreeWithNative0() {
+     /*
+      a = 1;
+      [Native]{
+      b = 2
+      c = 3};
+      }
+      d = 4;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), identifier("1")));
+    body.add(simpleNative(null, assignment(identifier("b"), identifier("2")),assignment(identifier("c"), identifier("3"))));
+    body.add(assignment(identifier("d"), identifier("4")));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(5, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
   }
 
   @Test
@@ -499,7 +527,11 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(3, cfg.blocks().size());
+    assertEquals(4, cfg.blocks().size());
+
+    assertEquals(6, cfg.blocks().get(3).elements().size());
+    assertFalse(cfg.blocks().get(3).isReliable());
+
     assertFalse(cfg.isReliable());
   }
 
@@ -514,6 +546,7 @@ public class CfgTest {
         }
         if(cond3) {
           c = 3;
+        }
         }
       }
      */
@@ -537,7 +570,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(6, cfg.blocks().size());
+    assertEquals(7, cfg.blocks().size());
     assertFalse(cfg.isReliable());
   }
 
@@ -567,7 +600,30 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(3, cfg.blocks().size());
+    assertEquals(4, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
+  }
+
+  @Test
+  public void testTreeWithNative4() {
+     /*
+      a = 1;
+      b = [Native]{2 || 2};
+      c = 4;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(simpleFunction(identifier("a"), block()));
+    body.add(assignment(identifier("b"), simpleNative(null,identifier("2"),leafNative())));
+    body.add(assignment(identifier("c"), identifier("4")));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(5, cfg.blocks().size());
     assertFalse(cfg.isReliable());
   }
 
@@ -607,7 +663,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(6, cfg.blocks().size());
+    assertEquals(8, cfg.blocks().size());
     assertFalse(cfg.isReliable());
   }
 
@@ -635,9 +691,9 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(4, cfg.blocks().size());
+    assertEquals(5, cfg.blocks().size());
 
-    assertEquals(3, cfg.blocks().get(1).elements().size());
+    assertEquals(3, cfg.blocks().get(2).elements().size());
   }
 
   @Test
@@ -662,9 +718,9 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(3, cfg.blocks().size());
+    assertEquals(4, cfg.blocks().size());
     assertTrue(cfg.isReliable());
-    assertEquals(3, cfg.blocks().get(1).elements().size());
+    assertEquals(3, cfg.blocks().get(2).elements().size());
   }
 
   @Test
@@ -693,7 +749,7 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(3, cfg.blocks().size());
+    assertEquals(5, cfg.blocks().size());
     assertFalse(cfg.isReliable());
   }
 

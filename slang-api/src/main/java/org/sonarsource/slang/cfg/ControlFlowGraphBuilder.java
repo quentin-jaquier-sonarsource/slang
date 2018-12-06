@@ -52,8 +52,6 @@ class ControlFlowGraphBuilder {
   private final List<SlangCfgBlock> blocks = new ArrayList<>();
   private final SlangCfgBlock end = new SlangCfgEndBlock();
 
-  private CfgBlock currentBlock = createSimpleBlock(end);
-
   private final LinkedList<Breakable> breakables = new LinkedList<>();
 
   private final Deque<SlangCfgBlock> throwTargets = new ArrayDeque<>();
@@ -71,9 +69,9 @@ class ControlFlowGraphBuilder {
     exitTargets.push(new TryBodyEnd(end, end));
     start = build(items, createSimpleBlock(end));
     removeEmptyBlocks();
+    start = createSimpleBlock(start);
     blocks.add(end);
     computePredecessors();
-
   }
 
   ControlFlowGraph getGraph() {
@@ -109,6 +107,10 @@ class ControlFlowGraphBuilder {
   private SlangCfgBlock build(List<? extends Tree> trees, SlangCfgBlock successor) {
     SlangCfgBlock currentBlock = successor;
     for (Tree tree : Lists.reverse(trees)) {
+      //Break the current block if the next part is unreliable (and not still in unreliable block)
+      if(!currentBlock.isReliable() && reliableSubFlow){
+        currentBlock = createSimpleBlock(currentBlock);
+      }
       currentBlock = build(tree, currentBlock);
     }
 
@@ -117,9 +119,8 @@ class ControlFlowGraphBuilder {
 
   private SlangCfgBlock build(Tree tree, SlangCfgBlock currentBlock) {
     if(!reliableSubFlow){
-      currentBlock.notReliable();
+      makeUnreliable(currentBlock);
     }
-
     if(tree instanceof MatchTree) {
       return buildMatchTree((MatchTree) tree, currentBlock);
     } else if(tree instanceof JumpTree) {
@@ -132,25 +133,23 @@ class ControlFlowGraphBuilder {
       return buildLoopStatement((LoopTree) tree, currentBlock);
     } else if(tree instanceof ReturnTree) {
       return buildReturnStatement((ReturnTree) tree, currentBlock);
-    } else if(tree instanceof ThrowTree){
+    } else if(tree instanceof ThrowTree) {
       return buildThrowStatement((ThrowTree) tree, currentBlock);
     } else if(tree instanceof ExceptionHandlingTree) {
       return buildExceptionHandling((ExceptionHandlingTree)tree, currentBlock);
     } else if(tree instanceof NativeTree) {
       if(tree.children().isEmpty()){
         currentBlock.addElement(tree);
+        return currentBlock;
       } else if(tree.children().size() == 1) {
         //Add the child independently
-        build(tree.children(), currentBlock);
+        return build(tree.children(), currentBlock);
       } else {
-        makeUnreliable(currentBlock);
         reliableSubFlow = false;
-        SlangCfgBlock nativeB = build(tree.children(), currentBlock);
-        nativeB.notReliable();
+        SlangCfgBlock nativeB = buildSubFlow(tree.children(), currentBlock);
         reliableSubFlow = true;
         return nativeB;
       }
-      return currentBlock;
     } else {
       if(tree != null) {
         if(!tree.children().isEmpty()) {
@@ -180,9 +179,7 @@ class ControlFlowGraphBuilder {
     }
 
     SlangCfgBlock condition = createMultiSuccessorBlock(cases);
-    build(tree.expression(), condition);
-
-    return condition;
+    return build(tree.expression(), condition);
   }
 
   private SlangCfgBlock buildBreakableMatchTree(MatchTree tree, SlangCfgBlock successor){
@@ -199,9 +196,7 @@ class ControlFlowGraphBuilder {
     }
     removeBreakable();
     SlangCfgBlock block = createSimpleBlock(nextCase);
-    build(tree.expression(), block);
-
-    return block;
+    return build(tree.expression(), block);
   }
 
   private SlangCfgBlock buildJumpTree(JumpTree tree, SlangCfgBlock successor) {
@@ -294,25 +289,26 @@ class ControlFlowGraphBuilder {
 
   private SlangCfgBlock buildCatchBlock(CatchTree catchBlock, SlangCfgBlock block) {
     SlangCfgBlock cfgBlock = buildSubFlow(catchBlock.catchBlock(), block);
-    build(catchBlock.catchParameter(), cfgBlock);
-    cfgBlock.addElement(catchBlock);
-    return cfgBlock;
+
+    SlangCfgBlock retCfgBlock = build(catchBlock.catchParameter(), cfgBlock);
+    retCfgBlock.addElement(catchBlock);
+    return retCfgBlock;
   }
 
   private SlangCfgBlock buildThrowStatement(ThrowTree tree, SlangCfgBlock successor) {
     // taking "latest" throw target is an estimation
     // In real a matching `catch` clause should be found (by exception type)
     SlangCfgBlock simpleBlock = createBlockWithSyntacticSuccessor(throwTargets.peek(), successor);
-    build(tree.body(), simpleBlock);
-    simpleBlock.addElement(tree);
-    return simpleBlock;
+    SlangCfgBlock retBlock = build(tree.body(), simpleBlock);
+    retBlock.addElement(tree);
+    return retBlock;
   }
 
   private SlangCfgBlock buildReturnStatement(ReturnTree tree, SlangCfgBlock successor) {
     SlangCfgBlock simpleBlock = createBlockWithSyntacticSuccessor(exitTargets.peek().exitBlock, successor);
-    build(tree.body(), simpleBlock);
-    simpleBlock.addElement(tree);
-    return simpleBlock;
+    SlangCfgBlock retBlock = build(tree.body(), simpleBlock);
+    retBlock.addElement(tree);
+    return retBlock;
   }
 
   private SlangCfgBlock buildLoopStatement(LoopTree tree, SlangCfgBlock successor) {
@@ -338,10 +334,10 @@ class ControlFlowGraphBuilder {
     ForwardingBlock linkToBody = createForwardingBlock();
     SlangCfgBranchingBlock conditionBlock = createBranchingBlock(tree, linkToBody, successor);
 
-    build(tree.condition(), conditionBlock);
+    SlangCfgBlock retCondition = build(tree.condition(), conditionBlock);
 
-    addBreakable(successor, conditionBlock);
-    SlangCfgBlock loopBodyBlock = buildSubFlow(ImmutableList.of(tree.body()), conditionBlock);
+    addBreakable(successor, retCondition);
+    SlangCfgBlock loopBodyBlock = buildSubFlow(ImmutableList.of(tree.body()), retCondition);
     removeBreakable();
 
     linkToBody.setSuccessor(loopBodyBlock);
@@ -357,9 +353,12 @@ class ControlFlowGraphBuilder {
 
     SlangCfgBranchingBlock conditionBlock = createBranchingBlock(tree, loopBodyBlock, successor);
 
-    build(tree.condition(), conditionBlock);
-    linkToCondition.setSuccessor(conditionBlock);
-    return createSimpleBlock(conditionBlock);
+    //If the confition block is made of multiple blocks, we have to take the last
+    SlangCfgBlock ret = build(tree.condition(), conditionBlock);
+
+    linkToCondition.setSuccessor(ret);
+
+    return createSimpleBlock(ret);
   }
 
 
@@ -370,11 +369,12 @@ class ControlFlowGraphBuilder {
     }
     SlangCfgBlock trueBlock = buildSubFlow(tree.thenBranch(), successor);
     SlangCfgBranchingBlock conditionBlock = createBranchingBlock(tree, trueBlock, falseBlock);
-    build(tree.condition(), conditionBlock);
-    return conditionBlock;
+    return build(tree.condition(), conditionBlock);
   }
 
   private SlangCfgBlock buildSubFlow(Tree subFlowTree, SlangCfgBlock successor) {
+    SlangCfgBlock currentSubFlow;
+
     if(subFlowTree instanceof MatchCaseTree) {
       //Add the expression and body in the same block
       MatchCaseTree tree = (MatchCaseTree) subFlowTree;
@@ -387,16 +387,25 @@ class ControlFlowGraphBuilder {
         }
       }
       expressionAndBody.add(tree.expression());
-      return buildSubFlow(expressionAndBody, successor);
+      currentSubFlow = buildSubFlow(expressionAndBody, successor);
     } else if(subFlowTree instanceof BlockTree){
-      return buildSubFlow(((BlockTree)subFlowTree).statementOrExpressions(), successor);
+      currentSubFlow = buildSubFlow(((BlockTree)subFlowTree).statementOrExpressions(), successor);
     } else {
-      return build(subFlowTree, createSimpleBlock(successor));
+      currentSubFlow = build(subFlowTree, createSimpleBlock(successor));
     }
+
+    if(!reliableSubFlow) {
+      makeUnreliable(currentSubFlow);
+    }
+    return currentSubFlow;
   }
 
   private SlangCfgBlock buildSubFlow(List<Tree> subFlowTree, SlangCfgBlock successor) {
-    return build(subFlowTree, createSimpleBlock(successor));
+    SlangCfgBlock currentSubFlow = build(subFlowTree, createSimpleBlock(successor));
+    if(!reliableSubFlow) {
+      makeUnreliable(currentSubFlow);
+    }
+    return currentSubFlow;
   }
 
   private SlangCfgBlock createSimpleBlock(SlangCfgBlock successor) {
