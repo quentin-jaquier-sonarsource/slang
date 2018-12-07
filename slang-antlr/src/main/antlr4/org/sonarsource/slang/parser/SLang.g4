@@ -150,14 +150,10 @@ parenthesizedExpression
   ;
 
 methodInvocation
-  :  (methodSelect DOT)? methodName LPAREN argumentList? RPAREN
+  :  memberSelect LPAREN argumentList? RPAREN
   ;
 
-methodName
-  :  identifier
-  ;
-
-methodSelect
+memberSelect
   :  identifier (DOT identifier)*
   ;
 

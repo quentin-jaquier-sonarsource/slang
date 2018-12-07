@@ -69,6 +69,7 @@ import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
 import org.sonarsource.slang.impl.MatchCaseTreeImpl;
 import org.sonarsource.slang.impl.MatchTreeImpl;
+import org.sonarsource.slang.impl.MemberSelectImpl;
 import org.sonarsource.slang.impl.ModifierTreeImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
 import org.sonarsource.slang.impl.PackageDeclarationTreeImpl;
@@ -322,33 +323,30 @@ public class SLangConverter implements ASTConverter {
 
     @Override
     public Tree visitMethodInvocation(SLangParser.MethodInvocationContext ctx) {
-      Tree methodSelectTree = null;
-      SLangParser.MethodSelectContext methodSelect = ctx.methodSelect();
-      IdentifierTree name = (IdentifierTree) visit(ctx.methodName());
+      Tree methodSelectTree = visit(ctx.memberSelect());
       SLangParser.ArgumentListContext argumentListContext = ctx.argumentList();
 
-      if(methodSelect != null){
-        methodSelectTree = visit(methodSelect);
-      }
       List<Tree> args = new ArrayList<>();
       if (argumentListContext != null) {
         args.addAll(list(argumentListContext.statement()));
       }
 
-      return new FunctionInvocationTreeImpl(meta(ctx), methodSelectTree, args, name);
+      return new FunctionInvocationTreeImpl(meta(ctx), methodSelectTree, args);
     }
 
     @Override
-    public Tree visitMethodSelect(SLangParser.MethodSelectContext ctx) {
-      List<SLangParser.IdentifierContext> identifiers = ctx.identifier();
-      if(identifiers.size() == 1){
-        return visit(identifiers.get(0));
-      } else {
-        // Dotted expression
-        List<Tree> children = new ArrayList<>();
-        children.addAll(list(ctx.identifier()));
-        return new NativeTreeImpl(meta(ctx), new SNativeKind(ctx), children);
+    public Tree visitMemberSelect(SLangParser.MemberSelectContext ctx) {
+      if(ctx.identifier().size() == 1){
+        return visit(ctx.identifier(0));
       }
+      int i = 0;
+      Tree t = visit(ctx.identifier(0));
+      while(i < ctx.identifier().size()) {
+        SLangParser.IdentifierContext currentId = ctx.identifier(i);
+        t = new MemberSelectImpl(meta(currentId), t, (IdentifierTree) visit(currentId));
+        i++;
+      }
+      return t;
     }
 
     @Override

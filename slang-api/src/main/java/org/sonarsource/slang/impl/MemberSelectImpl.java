@@ -21,43 +21,40 @@ package org.sonarsource.slang.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-import org.sonarsource.slang.api.FunctionInvocationTree;
+import org.sonarsource.slang.api.IdentifierTree;
+import org.sonarsource.slang.api.MemberSelect;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.TreeMetaData;
 
-public class FunctionInvocationTreeImpl extends BaseTreeImpl implements FunctionInvocationTree {
-  private final Tree methodSelect;
-  private final List<Tree> arguments;
+public class MemberSelectImpl extends BaseTreeImpl  implements MemberSelect {
 
-  public FunctionInvocationTreeImpl(
-      TreeMetaData metaData,
-      @Nullable Tree methodSelect,
-      List<Tree> arguments) {
+  private final Tree expression;
+  private final IdentifierTree identifier;
+
+  public MemberSelectImpl(
+    TreeMetaData metaData,
+    Tree expression,
+    IdentifierTree identifier) {
     super(metaData);
-    this.methodSelect = methodSelect;
-    this.arguments = arguments;
-  }
-
-  @CheckForNull
-  @Override
-  public Tree methodSelect() {
-    return methodSelect;
+    this.expression = expression;
+    this.identifier = identifier;
   }
 
   @Override
-  public List<Tree> arguments() {
-    return arguments;
+  public Tree expression() {
+    return expression;
+  }
+
+  @Override
+  public IdentifierTree identifier() {
+    return identifier;
   }
 
   @Override
   public List<Tree> children() {
     List<Tree> children = new ArrayList<>();
-    if(methodSelect != null){
-      children.add(methodSelect);
-    }
-    children.addAll(arguments);
+    children.add(expression);
+    children.add(identifier);
     return children;
   }
 }

@@ -19,13 +19,9 @@
  */
 package org.sonarsource.slang.api;
 
-import java.util.List;
-import javax.annotation.CheckForNull;
+public interface MemberSelect extends Tree {
 
-public interface FunctionInvocationTree extends Tree {
+  Tree expression();
 
-  @CheckForNull
-  Tree methodSelect();
-
-  List<Tree> arguments();
+  IdentifierTree identifier();
 }

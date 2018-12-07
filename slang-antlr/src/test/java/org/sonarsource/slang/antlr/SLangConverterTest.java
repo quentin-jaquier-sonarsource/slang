@@ -42,6 +42,7 @@ import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LiteralTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.MatchTree;
+import org.sonarsource.slang.api.MemberSelect;
 import org.sonarsource.slang.api.ModifierTree;
 import org.sonarsource.slang.api.NativeTree;
 import org.sonarsource.slang.api.PackageDeclarationTree;
@@ -589,7 +590,9 @@ public class SLangConverterTest {
     assertTree(functionInvocationNoArgument.children().get(0)).isInstanceOf(FunctionInvocationTree.class);
 
     FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree) functionInvocationNoArgument.children().get(0);
-    assertThat(functionInvocationTree.methodSelect()).isNull();
+    assertThat(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(IdentifierTree.class);;
+
 
     assertTree(functionInvocationNoArgument).isEquivalentTo(functionInvocationNoArgument);
     assertTree(functionInvocationNoArgument).isEquivalentTo(converter.parse("function();"));
@@ -605,15 +608,14 @@ public class SLangConverterTest {
 
   @Test
   public void methodSelectInvocations() {
-    Tree functionInvocationNoArgument = converter.parse("A.function();");
+    Tree functionInvocationNoArgument = converter.parse("A.B.function();");
     assertTree(functionInvocationNoArgument.children().get(0)).isInstanceOf(FunctionInvocationTree.class);
 
     FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree) functionInvocationNoArgument.children().get(0);
 
-    assertThat(functionInvocationTree.methodName().name()).isEqualTo("function");
     assertThat(functionInvocationTree.methodSelect()).isNotNull();
-    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(IdentifierTree.class);
-    assertThat(((IdentifierTree)functionInvocationTree.methodSelect()).name()).isEqualTo("A");
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(MemberSelect.class);
+    assertThat(((MemberSelect)functionInvocationTree.methodSelect()).identifier().name()).isEqualTo("function");
 
     assertTree(functionInvocationNoArgument).isEquivalentTo(functionInvocationNoArgument);
     assertTree(functionInvocationNoArgument).isNotEquivalentTo(converter.parse("function();"));
