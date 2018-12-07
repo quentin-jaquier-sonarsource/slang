@@ -62,7 +62,7 @@ TopLevelTree {                             | public … }        | 20:1 … 45:1
                 }                          |                   |              
                 BlockTree {                | { … }             | 36:20 … 38:8 
                   ReturnTree {             | return … ;        | 37:9 … 37:22 
-                    ?PLUS? {               | j … 1             | 37:16 … 37:21
+                    BinaryExpressionTree { | j … 1             | 37:16 … 37:21
                       IdentifierTree       | j                 | 37:16 … 37:17
                       LiteralTree          | 1                 | 37:20 … 37:21
                     }                      |                   |              
@@ -81,7 +81,7 @@ TopLevelTree {                             | public … }        | 20:1 … 45:1
             }                              |                   |              
           }                                |                   |              
           ReturnTree {                     | return … ;        | 41:5 … 41:18 
-            ?PLUS? {                       | 0 … i             | 41:12 … 41:17
+            BinaryExpressionTree {         | 0 … i             | 41:12 … 41:17
               LiteralTree                  | 0                 | 41:12 … 41:13
               IdentifierTree               | i                 | 41:16 … 41:17
             }                              |                   |              

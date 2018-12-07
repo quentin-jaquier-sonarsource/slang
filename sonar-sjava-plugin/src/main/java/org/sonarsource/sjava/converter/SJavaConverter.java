@@ -76,6 +76,7 @@ import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
 import org.sonarsource.slang.impl.MatchCaseTreeImpl;
 import org.sonarsource.slang.impl.MatchTreeImpl;
+import org.sonarsource.slang.impl.MemberSelectImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
 import org.sonarsource.slang.impl.ParenthesizedExpressionTreeImpl;
 import org.sonarsource.slang.impl.ReturnTreeImpl;
@@ -174,6 +175,8 @@ public class SJavaConverter implements ASTConverter {
         return new BlockTreeImpl(metaData(t), convert(((org.sonar.plugins.java.api.tree.BlockTree) t).body()));
       case IDENTIFIER:
         return createIdentifierTree((org.sonar.plugins.java.api.tree.IdentifierTree) t);
+      case MEMBER_SELECT:
+        return createMemberSelectTree((MemberSelectExpressionTree) t);
       case BREAK_STATEMENT:
         return createBreakTree((BreakStatementTree) t);
       case CONTINUE_STATEMENT:
@@ -216,6 +219,10 @@ public class SJavaConverter implements ASTConverter {
     }
   }
 
+  private Tree createMemberSelectTree(MemberSelectExpressionTree t) {
+    return new MemberSelectImpl(metaData(t), convert(t.expression()), createIdentifierTree(t.identifier()));
+  }
+
   private Tree createVariableTree(VariableTree t) {
     IdentifierTree identifier = createIdentifierTree(t.simpleName());
     Tree type = null;
@@ -240,26 +247,10 @@ public class SJavaConverter implements ASTConverter {
   }
 
   private Tree createMethodInvocation(MethodInvocationTree t) {
-    Tree methodSelect = null;
-    IdentifierTree identifier;
-
-    if(t.methodSelect().is(org.sonar.plugins.java.api.tree.Tree.Kind.IDENTIFIER)) {
-      identifier = createIdentifierTree((org.sonar.plugins.java.api.tree.IdentifierTree) t.methodSelect());
-    } else if (t.methodSelect().is(org.sonar.plugins.java.api.tree.Tree.Kind.MEMBER_SELECT)) {
-      MemberSelectExpressionTree memberSelect = (MemberSelectExpressionTree)t.methodSelect();
-      if(memberSelect.expression().is(org.sonar.plugins.java.api.tree.Tree.Kind.IDENTIFIER)){
-        methodSelect = convert(memberSelect.expression());
-      } else {
-        //Multiple member select, actually only support one
-        return createNativeTree(t);
-      }
-      identifier = createIdentifierTree(memberSelect.identifier());
-    } else {
-      return createNativeTree(t);
-    }
+    Tree methodSelect = convert(t.methodSelect());
     List<Tree> arguments = convert((List<ExpressionTree>)t.arguments());
 
-    return new FunctionInvocationTreeImpl(metaData(t), methodSelect, arguments, identifier);
+    return new FunctionInvocationTreeImpl(metaData(t), methodSelect, arguments);
   }
 
   private Tree createMatchTree(SwitchStatementTree t) {

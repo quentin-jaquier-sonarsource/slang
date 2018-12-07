@@ -11,8 +11,10 @@ TopLevelTree {                         | public … }        | 20:1 … 33:1
         BlockTree {                    | { … }             | 21:27 … 31:4 
           ?EXPRESSION_STATEMENT? {     | p … ;             | 22:5 … 22:18 
             FunctionInvocationTree {   | p … )             | 22:5 … 22:17 
-              IdentifierTree           | p                 | 22:5 … 22:6  
-              IdentifierTree           | toString          | 22:7 … 22:15 
+              MemberSelect {           | p … toString      | 22:5 … 22:15 
+                IdentifierTree         | p                 | 22:5 … 22:6  
+                IdentifierTree         | toString          | 22:7 … 22:15 
+              }                        |                   |              
             }                          |                   |              
           }                            |                   |              
           IfTree {                     | if … }            | 24:5 … 24:21 
@@ -24,8 +26,10 @@ TopLevelTree {                         | public … }        | 20:1 … 33:1
           }                            |                   |              
           ?EXPRESSION_STATEMENT? {     | p … ;             | 26:5 … 26:18 
             FunctionInvocationTree {   | p … )             | 26:5 … 26:17 
-              IdentifierTree           | p                 | 26:5 … 26:6  
-              IdentifierTree           | toString          | 26:7 … 26:15 
+              MemberSelect {           | p … toString      | 26:5 … 26:15 
+                IdentifierTree         | p                 | 26:5 … 26:6  
+                IdentifierTree         | toString          | 26:7 … 26:15 
+              }                        |                   |              
             }                          |                   |              
           }                            |                   |              
           ?EXPRESSION_STATEMENT? {     | p … ;             | 28:5 … 28:22 

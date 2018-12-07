@@ -23,38 +23,40 @@ TopLevelTree {                       | public … }            | 20:1 … 36:1
           }                          |                       |              
           ?EXPRESSION_STATEMENT? {   | p … ;                 | 25:5 … 25:18 
             FunctionInvocationTree { | p … )                 | 25:5 … 25:17 
-              IdentifierTree         | p                     | 25:5 … 25:6  
-              IdentifierTree         | toString              | 25:7 … 25:15 
+              MemberSelect {         | p … toString          | 25:5 … 25:15 
+                IdentifierTree       | p                     | 25:5 … 25:6  
+                IdentifierTree       | toString              | 25:7 … 25:15 
+              }                      |                       |              
             }                        |                       |              
           }                          |                       |              
           ?EXPRESSION_STATEMENT? {   | this … ;              | 26:5 … 26:23 
-            ?METHOD_INVOCATION? {    | this … )              | 26:5 … 26:22 
-              ?MEMBER_SELECT? {      | this … toString       | 26:5 … 26:20 
-                ?MEMBER_SELECT? {    | this … q              | 26:5 … 26:11 
+            FunctionInvocationTree { | this … )              | 26:5 … 26:22 
+              MemberSelect {         | this … toString       | 26:5 … 26:20 
+                MemberSelect {       | this … q              | 26:5 … 26:11 
                   IdentifierTree     | this                  | 26:5 … 26:9  
                   IdentifierTree     | q                     | 26:10 … 26:11
                 }                    |                       |              
                 IdentifierTree       | toString              | 26:12 … 26:20
               }                      |                       |              
-              ?ARGUMENTS?            | ( … )                 | 26:20 … 26:22
             }                        |                       |              
           }                          |                       |              
           ?EXPRESSION_STATEMENT? {   | functionIn … ;        | 27:5 … 27:37 
-            ?METHOD_INVOCATION? {    | functionIn … )        | 27:5 … 27:36 
-              ?MEMBER_SELECT? {      | functionIn … toString | 27:5 … 27:34 
-                ?MEMBER_SELECT? {    | functionIn … q        | 27:5 … 27:25 
+            FunctionInvocationTree { | functionIn … )        | 27:5 … 27:36 
+              MemberSelect {         | functionIn … toString | 27:5 … 27:34 
+                MemberSelect {       | functionIn … q        | 27:5 … 27:25 
                   IdentifierTree     | functionInvocation    | 27:5 … 27:23 
                   IdentifierTree     | q                     | 27:24 … 27:25
                 }                    |                       |              
                 IdentifierTree       | toString              | 27:26 … 27:34
               }                      |                       |              
-              ?ARGUMENTS?            | ( … )                 | 27:34 … 27:36
             }                        |                       |              
           }                          |                       |              
           ?EXPRESSION_STATEMENT? {   | this … ;              | 28:5 … 28:19 
             FunctionInvocationTree { | this … )              | 28:5 … 28:18 
-              IdentifierTree         | this                  | 28:5 … 28:9  
-              IdentifierTree         | f                     | 28:10 … 28:11
+              MemberSelect {         | this … f              | 28:5 … 28:11 
+                IdentifierTree       | this                  | 28:5 … 28:9  
+                IdentifierTree       | f                     | 28:10 … 28:11
+              }                      |                       |              
               LiteralTree            | 1                     | 28:12 … 28:13
               LiteralTree            | 2                     | 28:14 … 28:15
               LiteralTree            | 3                     | 28:16 … 28:17
@@ -75,8 +77,8 @@ TopLevelTree {                       | public … }            | 20:1 … 36:1
         }                            |                       |              
         BlockTree {                  | { … }                 | 31:38 … 33:4 
           ReturnTree {               | return … ;            | 32:5 … 32:22 
-            ?PLUS? {                 | i … k                 | 32:12 … 32:21
-              ?PLUS? {               | i … j                 | 32:12 … 32:17
+            BinaryExpressionTree {   | i … k                 | 32:12 … 32:21
+              BinaryExpressionTree { | i … j                 | 32:12 … 32:17
                 IdentifierTree       | i                     | 32:12 … 32:13
                 IdentifierTree       | j                     | 32:16 … 32:17
               }                      |                       |              
