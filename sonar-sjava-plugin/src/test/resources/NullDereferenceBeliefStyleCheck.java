@@ -1,11 +1,13 @@
 class A {
 
+  int shortcircuit152(Object p, boolean b) {
+    if(p.toString() || p == null){} // Compliant, multiple method select are not supported
+  }
+
   int loop0(Object p, boolean b) {
     a = "" + p.toString();
     if(p == null){ } // Noncompliant
   }
-
-
 
   int foo4(Object p, boolean b) {
     a = 1;
@@ -129,8 +131,7 @@ class A {
 
   int shortcircuit01(Object p, boolean b) {
     (p != null && q.a == p.foo());
-    if (p == null) {} // Noncompliant
-    //FP due to native node in the middle of the boolean expression
+    if (p == null) {} // Compliant
   }
 
   int f(Object p, boolean b) {
@@ -280,8 +281,7 @@ class A {
 
   int loop4(Object p, boolean b) {
     if(p.toString().equals("a")) {
-      while (p == null) { // Compliant, multiple method select are not supported
-
+      while (p == null) { // Noncompliant
       }
     }
   }
@@ -412,7 +412,7 @@ class A {
 
     a.s;
 
-    if(a == null){ // Compliant, FN due to field
+    if(a == null){ // Noncompliant
 
     }
   }

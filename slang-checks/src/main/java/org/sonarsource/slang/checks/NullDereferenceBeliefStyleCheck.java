@@ -37,6 +37,7 @@ import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.FunctionInvocationTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.LiteralTree;
+import org.sonarsource.slang.api.MemberSelect;
 import org.sonarsource.slang.api.NativeTree;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.VariableDeclarationTree;
@@ -60,9 +61,6 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         NullTracking nullTracking = NullTracking.analyse(cfg);
 
         System.out.println(CfgPrinter.toDot(cfg));
-
-
-        String p = null;
 
         for (CfgBlock block : cfg.blocks()) {
 //          if(block.isReliable()) {
@@ -187,10 +185,10 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       for (Tree element : block.elements()) {
         if(element instanceof AssignmentExpressionTree){
           processAssignment((AssignmentExpressionTree) element, blockKill, blockGen);
-        } else if(element instanceof FunctionInvocationTree){
+        } else if(element instanceof MemberSelect){
           //Gen only in reliable block (not in native)
           if(block.isReliable()) {
-            processMethodInvocation((FunctionInvocationTree) element, blockGen);
+            processMemberSelect((MemberSelect) element, blockGen);
           }
         } else if(element instanceof VariableDeclarationTree){
           processVariable(((VariableDeclarationTree) element).identifier(), blockKill, blockGen);
@@ -288,9 +286,9 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       blockGen.remove(element.identifier());
     }
 
-    private void processMethodInvocation(FunctionInvocationTree element, Set<String> blockGen) {
+    private void processMemberSelect(MemberSelect element, Set<String> blockGen) {
       //TODO: Check if it is a identifier here
-      processPointerUse(element.methodSelect(), blockGen);
+      processPointerUse(element.expression(), blockGen);
     }
 
     private void processPointerUse(Tree element, Set<String> blockGen) {
