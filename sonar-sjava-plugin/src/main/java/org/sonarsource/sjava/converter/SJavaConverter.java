@@ -198,6 +198,8 @@ public class SJavaConverter implements ASTConverter {
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.NOT_EQUAL_TO);
       case EQUAL_TO: //TODO: add other binary
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.EQUAL_TO);
+      case PLUS:
+        return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.PLUS);
       case CONDITIONAL_OR:
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.CONDITIONAL_OR);
       case CONDITIONAL_AND:

@@ -1,8 +1,18 @@
 class A {
 
-  int shortcircuit01(Object p, boolean b) {
-    ((p == null)) || p.toString(); // Compliant
-    if(p == null) {} // Compliant, the pointer use has been short circuited
+  int loop0(Object p, boolean b) {
+    a = "" + p.toString();
+    if(p == null){ } // Noncompliant
+  }
+
+
+
+  int foo4(Object p, boolean b) {
+    a = 1;
+
+    A ? B : p.toString(); // Compliant
+
+    p == null;
   }
 
   int foo3(Object p, boolean b) {
@@ -36,6 +46,8 @@ class A {
     if(p == null) { } // Noncompliant
   }
 
+
+
   int assign(Object p, boolean b) {
     foo6 = p.toString();
     if(p == null) {} // Noncompliant
@@ -52,8 +64,18 @@ class A {
 
   //== Short circuit ===================================================
 
+  int shortcircuit01(Object p, boolean b) {
+    ((p == null)) || p.toString(); // Compliant
+    if(p == null) {} // Compliant, the pointer use has been short circuited
+  }
+
   int shortcircuitAnd01(Object p, boolean b) {
     p != null && p.toString(); // Compliant
+    if(p == null) {} // Compliant, the call to the fun has not been made
+  }
+
+  int shortcircuitAnd01(Object p, boolean b) {
+    p != null && a == p.toString(); // Compliant
     if(p == null) {} // Compliant, the call to the fun has not been made
   }
 
@@ -78,7 +100,7 @@ class A {
   }
 
   int shortcircuit15(Object p, boolean b) {
-    if(p.equals("a") || p == null){} // Noncompliant
+    if(p.equals("a") || p == null){} // Compliant, FN, due to the naive short circuit
   }
 
   int shortcircuit152(Object p, boolean b) {
@@ -95,6 +117,20 @@ class A {
 
   int shortcircuit3(Object p, boolean b) {
     p == null || p.toString(); // Compliant
+  }
+
+  int shortcircuit01(Object p, boolean b) {
+    (q == a) || p == null || p.toString(); // Compliant
+  }
+
+  int shortcircuit01(Object p, boolean b) {
+    q == null || q.toString() || (q == a) || p == null || p.toString(); // Compliant
+  }
+
+  int shortcircuit01(Object p, boolean b) {
+    (p != null && q.a == p.foo());
+    if (p == null) {} // Noncompliant
+    //FP due to native node in the middle of the boolean expression
   }
 
   int f(Object p, boolean b) {
@@ -270,6 +306,13 @@ class A {
     }
   }
 
+  int loop0(Object p, boolean b) {
+    for(int i = 0; i < p.size(); i ++){
+      a = 1;
+    }
+    if(p == null){ } // Compliant, FN due to for loop head
+  }
+
   private Map.Entry<K,V> lowestEntry() {
     for (; ; ) {
       ConcurrentSkipListMap.Node<K, V> n = loNode();
@@ -281,12 +324,6 @@ class A {
     }
   }
 
-  private String shadowString(String s) {
-    s.toString();
-
-    String s = "";
-    if(s == null){ } // Compliant
-  }
   //== Exception =======================================
 
   void foo(boolean a, Object b) {
@@ -347,6 +384,13 @@ class A {
   void doSomething() { }
 
   //== Other =======================================
+
+  private String shadowString(String s) {
+    s.toString();
+
+    String s = "";
+    if(s == null){ } // Compliant
+  }
 
   void inReturn(String p) {
     p.toString();

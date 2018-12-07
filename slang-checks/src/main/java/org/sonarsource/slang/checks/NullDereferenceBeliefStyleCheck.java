@@ -61,6 +61,9 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
 
         System.out.println(CfgPrinter.toDot(cfg));
 
+
+        String p = null;
+
         for (CfgBlock block : cfg.blocks()) {
 //          if(block.isReliable()) {
             block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx, cfg));
@@ -192,48 +195,93 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         } else if(element instanceof VariableDeclarationTree){
           processVariable(((VariableDeclarationTree) element).identifier(), blockKill, blockGen);
         } else if(element instanceof BinaryExpressionTree) {
-          String s = processBinaryExpression((BinaryExpressionTree)element);
-          if(s != null){
-            shortCircuited.add(s);
-          }
+            shortCircuited.addAll(processBinaryExpression((BinaryExpressionTree)element));
         }
       }
       blockGen.removeAll(shortCircuited);
     }
 
-    private String processBinaryExpression(BinaryExpressionTree element) {
+    private Set<String> processBinaryExpression(BinaryExpressionTree element) {
       //Search for pointer check for null followed by their use to remove them from gen set
-      Tree firstLhs = skipParentheses(element.leftOperand());
-      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_OR) && firstLhs instanceof BinaryExpressionTree) {
-        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) firstLhs;
-        if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
-          IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
-          LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();
-          if(rhs.value().equals("null")){
-            //We found a pointer checked for null
-            return lhs.name();
-            //TODO: Remove only the one gen in the binop, not the one after the binop
-//            p == null || p.toString(); // Compliant
-//            p.toString();
-//            if(p == null) {} // Noncompliant, FN without this improvement
+      Set<String> shortCircuited = new HashSet<>();
+      if (element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_OR)) {
+        Tree leftTree = skipParentheses(element.leftOperand());
+        if (leftTree instanceof BinaryExpressionTree) {
+          String temp = processSubBinaryExpression((BinaryExpressionTree) leftTree, BinaryExpressionTree.Operator.EQUAL_TO);
+          if(temp != null){
+            shortCircuited.add(temp);
+          }
+        }
+        Tree rightTree = skipParentheses(element.rightOperand());
+        if (rightTree instanceof BinaryExpressionTree) {
+          String temp =  processSubBinaryExpression((BinaryExpressionTree) rightTree, BinaryExpressionTree.Operator.EQUAL_TO);
+          if(temp != null){
+            shortCircuited.add(temp);
           }
         }
       }
-      // AND short circuit
-      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_AND) && firstLhs instanceof BinaryExpressionTree) {
-        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) firstLhs;
-        if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.NOT_EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
-          IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
-          LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();
-          if(rhs.value().equals("null")){
-            //We found a pointer checked for null
-            return lhs.name();
-            //TODO: Remove only the one gen in the binop, not the one after the binop
+      if (element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_AND)) {
+        Tree leftTree = skipParentheses(element.leftOperand());
+        if (leftTree instanceof BinaryExpressionTree) {
+          String temp = processSubBinaryExpression((BinaryExpressionTree) leftTree, BinaryExpressionTree.Operator.NOT_EQUAL_TO);
+          if(temp != null){
+            shortCircuited.add(temp);
           }
+        }
+        Tree rightTree = skipParentheses(element.rightOperand());
+        if (rightTree instanceof BinaryExpressionTree) {
+          String temp = processSubBinaryExpression((BinaryExpressionTree) rightTree, BinaryExpressionTree.Operator.NOT_EQUAL_TO);
+          if(temp != null){
+            shortCircuited.add(temp);
+          }
+        }
+      }
+      return shortCircuited;
+    }
+
+    private String processSubBinaryExpression(BinaryExpressionTree element, BinaryExpressionTree.Operator operator) {
+      if (element.operator().equals(operator) && element.leftOperand() instanceof IdentifierTree && element.rightOperand() instanceof LiteralTree) {
+        IdentifierTree lhs = (IdentifierTree) element.leftOperand();
+        LiteralTree rhs = (LiteralTree) element.rightOperand();
+        if (rhs.value().equals("null")) {
+          return lhs.name();
         }
       }
       return null;
     }
+
+
+//      Tree firstLhs = skipParentheses(element.leftOperand());
+//      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_OR) && firstLhs instanceof BinaryExpressionTree) {
+//        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) firstLhs;
+//        if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
+//          IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
+//          LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();
+//          if(rhs.value().equals("null")){
+//            //We found a pointer checked for null
+//            return lhs.name();
+//            //TODO: Remove only the one gen in the binop, not the one after the binop
+////            p == null || p.toString(); // Compliant
+////            p.toString();
+////            if(p == null) {} // Noncompliant, FN without this improvement
+//          }
+//        }
+//      }
+//      // AND short circuit
+//      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_AND) && firstLhs instanceof BinaryExpressionTree) {
+//        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) firstLhs;
+//        if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.NOT_EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
+//          IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
+//          LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();
+//          if(rhs.value().equals("null")){
+//            //We found a pointer checked for null
+//            return lhs.name();
+//            //TODO: Remove only the one gen in the binop, not the one after the binop
+//          }
+//        }
+//      }
+//      return null;
+    //}
 
     private void processVariable(IdentifierTree element, Set<String> blockKill, Set<String> blockGen) {
       blockKill.add(element.name());
