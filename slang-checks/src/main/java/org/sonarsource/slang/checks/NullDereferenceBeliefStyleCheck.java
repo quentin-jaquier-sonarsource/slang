@@ -60,12 +60,8 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         ControlFlowGraph cfg = ControlFlowGraph.build(functionDeclarationTree);
         NullTracking nullTracking = NullTracking.analyse(cfg);
 
-        System.out.println(CfgPrinter.toDot(cfg));
-
         for (CfgBlock block : cfg.blocks()) {
-//          if(block.isReliable()) {
-            block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx, cfg));
-//          }
+          block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx, cfg));
         }
       }
     });
@@ -101,7 +97,6 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       }
 
       if(out.contains(pointerChecked)) {
-        System.out.println(CfgPrinter.toDot(cfg));
         ctx.reportIssue(element, "This check is either always false, or a null pointer has been raised before.");
       }
     }
@@ -248,46 +243,12 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       return null;
     }
 
-
-//      Tree firstLhs = skipParentheses(element.leftOperand());
-//      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_OR) && firstLhs instanceof BinaryExpressionTree) {
-//        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) firstLhs;
-//        if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
-//          IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
-//          LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();
-//          if(rhs.value().equals("null")){
-//            //We found a pointer checked for null
-//            return lhs.name();
-//            //TODO: Remove only the one gen in the binop, not the one after the binop
-////            p == null || p.toString(); // Compliant
-////            p.toString();
-////            if(p == null) {} // Noncompliant, FN without this improvement
-//          }
-//        }
-//      }
-//      // AND short circuit
-//      if(element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_AND) && firstLhs instanceof BinaryExpressionTree) {
-//        BinaryExpressionTree leftBinOp = (BinaryExpressionTree) firstLhs;
-//        if(leftBinOp.operator().equals(BinaryExpressionTree.Operator.NOT_EQUAL_TO) && leftBinOp.leftOperand() instanceof IdentifierTree && leftBinOp.rightOperand() instanceof LiteralTree) {
-//          IdentifierTree lhs = (IdentifierTree) leftBinOp.leftOperand();
-//          LiteralTree rhs = (LiteralTree) leftBinOp.rightOperand();
-//          if(rhs.value().equals("null")){
-//            //We found a pointer checked for null
-//            return lhs.name();
-//            //TODO: Remove only the one gen in the binop, not the one after the binop
-//          }
-//        }
-//      }
-//      return null;
-    //}
-
     private void processVariable(IdentifierTree element, Set<String> blockKill, Set<String> blockGen) {
       blockKill.add(element.name());
       blockGen.remove(element.identifier());
     }
 
     private void processMemberSelect(MemberSelect element, Set<String> blockGen) {
-      //TODO: Check if it is a identifier here
       processPointerUse(element.expression(), blockGen);
     }
 
@@ -295,8 +256,9 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       IdentifierTree id = getIdentifierIfPresent(element);
       if(id != null) {
         String name = id.name();
-        //TODO: Eventuelly check for field here
-        blockGen.add(name);
+        if(isLocal()) {
+          blockGen.add(name);
+        }
       }
     }
 
@@ -304,22 +266,21 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
       IdentifierTree lhs = getIdentifierIfPresent(element.leftHandSide());
       if (lhs != null) {
         String name = lhs.name();
-        //TODO: Eventuelly check for field here
-        //if we see an assignment, we remove all previously used  pointer (we don't know anything for them anymore)
-        blockKill.add(name);
-        blockGen.remove(name);
+        if(isLocal()) {
+          //if we see an assignment, we remove all previously used  pointer (we don't know anything for them anymore)
+          blockKill.add(name);
+          blockGen.remove(name);
+        }
       }
+    }
+
+    private boolean isLocal() {
+      return true; //TODO
     }
 
     private static IdentifierTree getIdentifierIfPresent(Tree tree){
       if(tree instanceof IdentifierTree) {
         return (IdentifierTree) tree;
-      } else if(tree instanceof NativeTree) {
-        //If a native surround the identifier.
-        List<Tree> children = tree.children();
-        if(children.size() == 1 && children.get(0) instanceof IdentifierTree){
-          return (IdentifierTree) children.get(0);
-        }
       }
       return null;
     }
