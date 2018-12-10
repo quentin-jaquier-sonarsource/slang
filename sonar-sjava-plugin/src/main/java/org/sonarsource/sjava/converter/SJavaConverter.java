@@ -24,14 +24,13 @@ import com.sonar.sslr.api.typed.ActionParser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import org.apache.commons.lang.ObjectUtils;
 import org.sonar.java.ast.parser.JavaParser;
 import org.sonar.java.model.JavaTree;
 import org.sonar.plugins.java.api.tree.AssignmentExpressionTree;
 import org.sonar.plugins.java.api.tree.BreakStatementTree;
 import org.sonar.plugins.java.api.tree.CaseGroupTree;
 import org.sonar.plugins.java.api.tree.CatchTree;
+import org.sonar.plugins.java.api.tree.ConditionalExpressionTree;
 import org.sonar.plugins.java.api.tree.ContinueStatementTree;
 import org.sonar.plugins.java.api.tree.DoWhileStatementTree;
 import org.sonar.plugins.java.api.tree.ExpressionTree;
@@ -165,6 +164,8 @@ public class SJavaConverter implements ASTConverter {
         return createLoopTree(t, ((DoWhileStatementTree)t).statement(), ((DoWhileStatementTree)t).condition(), LoopTree.LoopKind.DOWHILE, keyword(((DoWhileStatementTree)t).doKeyword()));
       case IF_STATEMENT:
         return createIfTree((IfStatementTree)t);
+      case CONDITIONAL_EXPRESSION:
+        return createConditionExpression((ConditionalExpressionTree)t);
       case SWITCH_STATEMENT:
         return createMatchTree((SwitchStatementTree)t);
       case ASSIGNMENT:
@@ -205,6 +206,10 @@ public class SJavaConverter implements ASTConverter {
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.PLUS);
       case MINUS:
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.MINUS);
+      case MULTIPLY:
+        return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.TIMES);
+      case DIVIDE:
+        return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.DIVIDED_BY);
       case CONDITIONAL_OR:
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.CONDITIONAL_OR);
       case CONDITIONAL_AND:
@@ -277,6 +282,12 @@ public class SJavaConverter implements ASTConverter {
     return new MatchCaseTreeImpl(metaData(t), label, body);
   }
 
+  private Tree createConditionExpression(ConditionalExpressionTree t) {
+    Tree cond = convert(t.condition());
+    Tree thenP = convert(t.trueExpression());
+    Tree elseP = convert(t.falseExpression());
+    return new IfTreeImpl(metaData(t), cond, thenP, elseP, keyword(t.questionToken()), keyword(t.colonToken()));
+  }
 
   private Tree createIfTree(IfStatementTree t) {
     Tree cond = convert(t.condition());

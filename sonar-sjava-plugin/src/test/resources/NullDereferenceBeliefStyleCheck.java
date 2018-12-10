@@ -469,7 +469,7 @@ class A {
     }
 
     void changeS() {
-      s = null;
+      s = "";
     }
   }
 
