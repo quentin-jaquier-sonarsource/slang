@@ -1,7 +1,29 @@
 class A {
 
-  int shortcircuit152(Object p, boolean b) {
-    if(p.toString() || p == null){} // Compliant, multiple method select are not supported
+  int foo(Object p, boolean b) {
+
+    int outputCapacity = output.length - outputOffset;
+    int minOutSize = (decrypting ? (estOutSize - blockSize) : estOutSize);
+    if ((output == null) || (outputCapacity < minOutSize)) { // Noncompliant
+      throw new ShortBufferException("Output buffer must be "
+          + "(at least) " + minOutSize + " bytes long");
+    }
+  }
+
+  int foo(Object p, boolean b) {
+    p.toString;
+    (p == null); // Compliant
+    p = "";
+  }
+
+  int foo(Object p, boolean b) {
+    p.toString;
+    if(p == null) {} // Noncompliant
+  }
+
+  int foo(Object p, boolean b) {
+    if(p == null) {} // Compliant
+    p.toString;
   }
 
   int loop0(Object p, boolean b) {
@@ -11,9 +33,7 @@ class A {
 
   int foo4(Object p, boolean b) {
     a = 1;
-
     A ? B : p.toString(); // Compliant
-
     p == null;
   }
 
@@ -132,6 +152,10 @@ class A {
   int shortcircuit01(Object p, boolean b) {
     (p != null && q.a == p.foo());
     if (p == null) {} // Compliant
+  }
+
+  int shortcircuit152(Object p, boolean b) {
+    if(p.toString() || p == null){} // Compliant, multiple method select are not supported
   }
 
   int f(Object p, boolean b) {

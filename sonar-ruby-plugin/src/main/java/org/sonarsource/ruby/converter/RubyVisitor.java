@@ -77,6 +77,7 @@ import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
 import org.sonarsource.slang.impl.MatchCaseTreeImpl;
 import org.sonarsource.slang.impl.MatchTreeImpl;
+import org.sonarsource.slang.impl.MemberSelectImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
 import org.sonarsource.slang.impl.ParameterTreeImpl;
 import org.sonarsource.slang.impl.ParenthesizedExpressionTreeImpl;
@@ -664,7 +665,7 @@ public class RubyVisitor {
         for(int i = 2; i < children.size(); i++){
           arguments.add((Tree) children.get(i));
         }
-        return new FunctionInvocationTreeImpl(metaData(node), methodSelect, arguments, name);
+        return new FunctionInvocationTreeImpl(metaData(node), new MemberSelectImpl(metaData(node), methodSelect, name), arguments);
       }
     }
 

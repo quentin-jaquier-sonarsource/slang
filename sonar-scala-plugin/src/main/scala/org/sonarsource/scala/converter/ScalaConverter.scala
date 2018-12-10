@@ -161,16 +161,12 @@ class ScalaConverter extends slang.api.ASTConverter {
           new ModifierTreeImpl(metaData, slang.api.ModifierTree.Kind.OVERRIDE)
         case Term.Return(expr) =>
           createReturnTree(metaData, expr)
-        case Term.Apply(Select(qual, name), args) =>
+        case Term.Apply(fun, args) =>
           new FunctionInvocationTreeImpl(metaData,
-            convert(qual),
-            args.map(convert).asJava,
-            convert(name).asInstanceOf[slang.api.IdentifierTree])
-        case Term.Apply(fun: Name, args) =>
-          new FunctionInvocationTreeImpl(metaData,
-            null,
-            args.map(convert).asJava,
-            convert(fun).asInstanceOf[slang.api.IdentifierTree])
+            convert(fun),
+            args.map(convert).asJava)
+        case Select(expr, id) =>
+          new MemberSelectImpl(metaData, convert(expr), convert(id).asInstanceOf[slang.api.IdentifierTree]);
         case _ =>
           createNativeTree(metaData, metaTree)
       }

@@ -119,6 +119,7 @@ import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
 import org.sonarsource.slang.impl.MatchCaseTreeImpl;
 import org.sonarsource.slang.impl.MatchTreeImpl;
+import org.sonarsource.slang.impl.MemberSelectImpl;
 import org.sonarsource.slang.impl.ModifierTreeImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
 import org.sonarsource.slang.impl.PackageDeclarationTreeImpl;
@@ -255,24 +256,43 @@ class KotlinTreeVisitor {
     } else if (element instanceof KtThrowExpression) {
       return createThrowTree(metaData, (KtThrowExpression) element);
     } else if(element instanceof KtDotQualifiedExpression) {
-      return createFunctionInvocationTree(metaData, (KtDotQualifiedExpression) element);
+      return createMemberSelect(metaData, (KtDotQualifiedExpression) element);
+    } else if(element instanceof KtCallExpression) {
+      return createFunctionInvocation(metaData, (KtCallExpression) element);
     } else {
       return convertElementToNative(element, metaData);
     }
   }
 
-  private Tree createFunctionInvocationTree(TreeMetaData metaData, KtDotQualifiedExpression ktDotQualifiedExpression) {
+  private Tree createFunctionInvocation(TreeMetaData metaData, KtCallExpression callExpression) {
+    IdentifierTree memberSelect;
+    if(callExpression.getCalleeExpression() != null) {
+      memberSelect = (IdentifierTree) createElement(callExpression.getCalleeExpression());
+    } else {
+      return convertElementToNative(callExpression, metaData);
+    }
+    List<Tree> args = list(callExpression.getTypeArguments().stream());
+    return new FunctionInvocationTreeImpl(metaData, memberSelect, args);
+  }
+
+  private Tree createMemberSelect(TreeMetaData metaData, KtDotQualifiedExpression ktDotQualifiedExpression) {
+    Tree memberSelect = createElement(ktDotQualifiedExpression.getReceiverExpression());
+
     if(ktDotQualifiedExpression.getSelectorExpression() instanceof KtCallExpression) {
       KtCallExpression callExpression = (KtCallExpression)ktDotQualifiedExpression.getSelectorExpression();
-      Tree methodSelect = convertElementToSlangAST(ktDotQualifiedExpression.getReceiverExpression(), metaData);
-      List<Tree> args = list(callExpression.getTypeArguments().stream());
 
-      if(callExpression.getCalleeExpression() instanceof KtNameReferenceExpression){
-        IdentifierTree name = (IdentifierTree) convertElementToSlangAST(callExpression.getCalleeExpression(), metaData);
-        return new FunctionInvocationTreeImpl(metaData, methodSelect, args, name);
+      if(callExpression.getCalleeExpression() == null){
+        return convertElementToNative(callExpression, metaData);
+      } else {
+        IdentifierTree name = (IdentifierTree) createElement(callExpression.getCalleeExpression());
+        List<Tree> args = list(callExpression.getTypeArguments().stream());
+        return new FunctionInvocationTreeImpl(getTreeMetaData(callExpression), new MemberSelectImpl(metaData, memberSelect, name), args);
       }
+    } else if(ktDotQualifiedExpression.getSelectorExpression() instanceof KtNameReferenceExpression) {
+      KtNameReferenceExpression nameRef = (KtNameReferenceExpression) ktDotQualifiedExpression.getSelectorExpression();
+      IdentifierTree name = (IdentifierTree) createElement(nameRef);
+      return new MemberSelectImpl(metaData, memberSelect, name);
     }
-
     return convertElementToNative(ktDotQualifiedExpression, metaData);
   }
 

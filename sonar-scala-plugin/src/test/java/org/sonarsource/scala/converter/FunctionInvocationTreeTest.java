@@ -22,10 +22,12 @@ package org.sonarsource.scala.converter;
 import org.junit.Test;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.FunctionInvocationTree;
+import org.sonarsource.slang.api.MemberSelect;
 import org.sonarsource.slang.api.NativeTree;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.cfg.ControlFlowGraph;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.sonarsource.slang.testing.TreeAssert.assertTree;
 
@@ -46,8 +48,10 @@ public class FunctionInvocationTreeTest extends AbstractScalaConverterTest {
     Tree tree = scalaStatement("p.toString()");
     FunctionInvocationTree fTree = (FunctionInvocationTree) tree;
     assertThat(fTree.arguments()).isEmpty();
-    assertTree(fTree.methodName()).isIdentifier("toString");
-    assertTree(fTree.methodSelect()).isIdentifier("p");
+    assertTrue(fTree.methodSelect() instanceof MemberSelect);
+    MemberSelect memberSelect = (MemberSelect) fTree.methodSelect();
+    assertTree(memberSelect.expression()).isIdentifier("p");
+    assertTree(memberSelect.identifier()).isIdentifier("toString");
   }
 
   @Test
@@ -55,16 +59,20 @@ public class FunctionInvocationTreeTest extends AbstractScalaConverterTest {
     Tree tree = scalaStatement("toString()");
     FunctionInvocationTree fTree = (FunctionInvocationTree) tree;
     assertThat(fTree.arguments()).isEmpty();
-    assertTree(fTree.methodName()).isIdentifier("toString");
-    assertTree(fTree.methodSelect()).isNull();
+    assertTree(fTree.methodSelect()).isIdentifier("toString");
   }
 
   @Test
   public void fun_invocation_chained_select() {
-    Tree tree = scalaStatement("A.p.toString()");
+    Tree tree = scalaStatement("A.B.toString()");
     FunctionInvocationTree fTree = (FunctionInvocationTree) tree;
     assertThat(fTree.arguments()).isEmpty();
-    assertTree(fTree.methodName()).isIdentifier("toString");
-    assertTree(fTree.methodSelect()).isInstanceOf(NativeTree.class);
+    assertTrue(fTree.methodSelect() instanceof MemberSelect);
+    MemberSelect memberSelect = (MemberSelect) fTree.methodSelect();
+    assertTree(memberSelect.identifier()).isIdentifier("toString");
+    assertTrue(memberSelect.expression() instanceof MemberSelect);
+    MemberSelect nestedMemberSelect = (MemberSelect) memberSelect.expression();
+    assertTree(nestedMemberSelect.expression()).isIdentifier("A");
+    assertTree(nestedMemberSelect.identifier()).isIdentifier("B");
   }
 }
