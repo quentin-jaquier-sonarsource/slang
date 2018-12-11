@@ -2,7 +2,7 @@ AST node class                       | first…last tokens     | line:col
 -------------------------------------|-----------------------|--------------
 TopLevelTree {                       | public … }            | 20:1 … 36:1  
   ClassDeclarationTree {             | public … }            | 20:1 … 34:2  
-    ?CLASS? {                        | public … }            | 20:1 … 34:2  
+    ?CLASS? {                        | public … }            | 21:3 … 33:4  
       VariableDeclarationTree {      | public … ;            | 21:3 … 21:31 
         IdentifierTree               | q                     | 21:24 … 21:25
         LiteralTree                  | ""                    | 21:28 … 21:30
@@ -13,7 +13,7 @@ TopLevelTree {                       | public … }            | 20:1 … 36:1
           IdentifierTree             | p                     | 23:24 … 23:25
         }                            |                       |              
         BlockTree {                  | { … }                 | 23:27 … 29:4 
-          ?EXPRESSION_STATEMENT? {   | f … ;                 | 24:5 … 24:14 
+          ?EXPRESSION_STATEMENT? {   | f … )                 | 24:5 … 24:13 
             FunctionInvocationTree { | f … )                 | 24:5 … 24:13 
               IdentifierTree         | f                     | 24:5 … 24:6  
               LiteralTree            | 1                     | 24:7 … 24:8  
@@ -21,7 +21,7 @@ TopLevelTree {                       | public … }            | 20:1 … 36:1
               LiteralTree            | 3                     | 24:11 … 24:12
             }                        |                       |              
           }                          |                       |              
-          ?EXPRESSION_STATEMENT? {   | p … ;                 | 25:5 … 25:18 
+          ?EXPRESSION_STATEMENT? {   | p … )                 | 25:5 … 25:17 
             FunctionInvocationTree { | p … )                 | 25:5 … 25:17 
               MemberSelect {         | p … toString          | 25:5 … 25:15 
                 IdentifierTree       | p                     | 25:5 … 25:6  
@@ -29,7 +29,7 @@ TopLevelTree {                       | public … }            | 20:1 … 36:1
               }                      |                       |              
             }                        |                       |              
           }                          |                       |              
-          ?EXPRESSION_STATEMENT? {   | this … ;              | 26:5 … 26:23 
+          ?EXPRESSION_STATEMENT? {   | this … )              | 26:5 … 26:22 
             FunctionInvocationTree { | this … )              | 26:5 … 26:22 
               MemberSelect {         | this … toString       | 26:5 … 26:20 
                 MemberSelect {       | this … q              | 26:5 … 26:11 
@@ -40,7 +40,7 @@ TopLevelTree {                       | public … }            | 20:1 … 36:1
               }                      |                       |              
             }                        |                       |              
           }                          |                       |              
-          ?EXPRESSION_STATEMENT? {   | functionIn … ;        | 27:5 … 27:37 
+          ?EXPRESSION_STATEMENT? {   | functionIn … )        | 27:5 … 27:36 
             FunctionInvocationTree { | functionIn … )        | 27:5 … 27:36 
               MemberSelect {         | functionIn … toString | 27:5 … 27:34 
                 MemberSelect {       | functionIn … q        | 27:5 … 27:25 
@@ -51,7 +51,7 @@ TopLevelTree {                       | public … }            | 20:1 … 36:1
               }                      |                       |              
             }                        |                       |              
           }                          |                       |              
-          ?EXPRESSION_STATEMENT? {   | this … ;              | 28:5 … 28:19 
+          ?EXPRESSION_STATEMENT? {   | this … )              | 28:5 … 28:18 
             FunctionInvocationTree { | this … )              | 28:5 … 28:18 
               MemberSelect {         | this … f              | 28:5 … 28:11 
                 IdentifierTree       | this                  | 28:5 … 28:9  

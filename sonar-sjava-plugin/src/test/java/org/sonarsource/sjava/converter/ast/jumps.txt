@@ -2,7 +2,7 @@ AST node class                             | first…last tokens | line:col
 -------------------------------------------|-------------------|--------------
 TopLevelTree {                             | public … }        | 20:1 … 45:1  
   ClassDeclarationTree {                   | public … }        | 20:1 … 43:2  
-    ?CLASS? {                              | public … }        | 20:1 … 43:2  
+    ?CLASS? {                              | public … }        | 21:3 … 42:4  
       FunctionDeclarationTree {            | public … }        | 21:3 … 42:4  
         IdentifierTree                     | t                 | 21:14 … 21:15
         VariableDeclarationTree {          | int … i           | 21:16 … 21:21
@@ -15,7 +15,7 @@ TopLevelTree {                             | public … }        | 20:1 … 45:1
               IdentifierTree               | i                 | 22:16 … 22:17
             }                              |                   |              
             BlockTree {                    | { … }             | 22:18 … 27:6 
-              ?EXPRESSION_STATEMENT? {     | i … ;             | 23:7 … 23:13 
+              ?EXPRESSION_STATEMENT? {     | i … 1             | 23:7 … 23:12 
                 AssignmentExpressionTree { | i … 1             | 23:7 … 23:12 
                   IdentifierTree           | i                 | 23:7 … 23:8  
                   LiteralTree              | 1                 | 23:11 … 23:12
@@ -50,9 +50,20 @@ TopLevelTree {                             | public … }        | 20:1 … 45:1
             }                              |                   |              
           }                                |                   |              
           LoopTree {                       | for … }           | 35:5 … 40:6  
-            ?LESS_THAN? {                  | j … 19            | 35:21 … 35:28
-              IdentifierTree               | j                 | 35:21 … 35:22
-              LiteralTree                  | 19                | 35:26 … 35:28
+            ?FOR_STATEMENT? {              | int … j           | 35:10 … 35:31
+              VariableDeclarationTree {    | int … 0           | 35:10 … 35:19
+                IdentifierTree             | j                 | 35:14 … 35:15
+                LiteralTree                | 0                 | 35:18 … 35:19
+              }                            |                   |              
+              ?LESS_THAN? {                | j … 19            | 35:21 … 35:28
+                IdentifierTree             | j                 | 35:21 … 35:22
+                LiteralTree                | 19                | 35:26 … 35:28
+              }                            |                   |              
+              ?EXPRESSION_STATEMENT? {     | j                 | 35:30 … 35:31
+                ?POSTFIX_INCREMENT? {      | j                 | 35:30 … 35:31
+                  IdentifierTree           | j                 | 35:30 … 35:31
+                }                          |                   |              
+              }                            |                   |              
             }                              |                   |              
             BlockTree {                    | { … }             | 35:35 … 40:6 
               IfTree {                     | if … }            | 36:7 … 38:8  
@@ -69,7 +80,7 @@ TopLevelTree {                             | public … }        | 20:1 … 45:1
                   }                        |                   |              
                 }                          |                   |              
               }                            |                   |              
-              ?EXPRESSION_STATEMENT? {     | i … ;             | 39:7 … 39:18 
+              ?EXPRESSION_STATEMENT? {     | i … 10            | 39:7 … 39:17 
                 AssignmentExpressionTree { | i … 10            | 39:7 … 39:17 
                   IdentifierTree           | i                 | 39:7 … 39:8  
                   ?REMAINDER? {            | j … 10            | 39:11 … 39:17

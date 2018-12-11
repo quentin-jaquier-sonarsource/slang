@@ -42,6 +42,7 @@ import org.sonar.plugins.java.api.tree.MethodTree;
 import org.sonar.plugins.java.api.tree.ModifierTree;
 import org.sonar.plugins.java.api.tree.ParenthesizedTree;
 import org.sonar.plugins.java.api.tree.ReturnStatementTree;
+import org.sonar.plugins.java.api.tree.StatementTree;
 import org.sonar.plugins.java.api.tree.SwitchStatementTree;
 import org.sonar.plugins.java.api.tree.SyntaxToken;
 import org.sonar.plugins.java.api.tree.ThrowStatementTree;
@@ -157,11 +158,7 @@ public class SJavaConverter implements ASTConverter {
       case WHILE_STATEMENT:
         return createLoopTree(t, ((WhileStatementTree)t).statement(), ((WhileStatementTree)t).condition(), LoopTree.LoopKind.WHILE, keyword(((WhileStatementTree)t).whileKeyword()));
       case FOR_STATEMENT:
-        if(((ForStatementTree)t).condition() == null) {
-          return createNativeTree(t);
-        } else {
-          return createLoopTree(t, ((ForStatementTree) t).statement(), ((ForStatementTree) t).condition(), LoopTree.LoopKind.FOR, keyword(((ForStatementTree) t).forKeyword()));
-        }
+        return createForLoopTree((ForStatementTree) t);
       case DO_STATEMENT:
         return createLoopTree(t, ((DoWhileStatementTree)t).statement(), ((DoWhileStatementTree)t).condition(), LoopTree.LoopKind.DOWHILE, keyword(((DoWhileStatementTree)t).doKeyword()));
       case IF_STATEMENT:
@@ -308,6 +305,19 @@ public class SJavaConverter implements ASTConverter {
     return new IfTreeImpl(metaData(t), cond, thenP, elseP, keyword(t.ifKeyword()), elseKeyword);
   }
 
+  private Tree createForLoopTree(org.sonar.plugins.java.api.tree.ForStatementTree t) {
+    if(t.condition() == null) {
+      return createNativeTree(t);
+    }
+
+    List<Tree> children = new ArrayList<>();
+    children.addAll(convert((List<StatementTree>)t.initializer()));
+    children.add(convert(t.condition()));
+    children.addAll(convert((List<StatementTree>)t.update()));
+
+    return new LoopTreeImpl(metaData(t), createNativeTree(t, children), convert(t.statement()), LoopTree.LoopKind.FOR, keyword(t.forKeyword()));
+  }
+
   private Tree createLoopTree(org.sonar.plugins.java.api.tree.Tree t, org.sonar.plugins.java.api.tree.Tree body, org.sonar.plugins.java.api.tree.Tree cond, LoopTree.LoopKind kind, Token keyword) {
     return new LoopTreeImpl(metaData(t), convert(cond), convert(body), kind, keyword);
   }
@@ -399,8 +409,16 @@ public class SJavaConverter implements ASTConverter {
     return createNativeTree(t, children);
   }
 
+
   private Tree createNativeTree(org.sonar.plugins.java.api.tree.Tree t, List<Tree> children) {
-    return new NativeTreeImpl(metaData(t), new SJavaNativeKind(t.kind().toString()), children);
+    if(children.isEmpty()){
+      return new NativeTreeImpl(metaData(t), new SJavaNativeKind(t.kind().toString()), children);
+    }
+
+    Tree lastConvertedChild = children.get(children.size() - 1);
+
+    TreeMetaData metaData = metaDataProvider.metaData(new TextRangeImpl(children.get(0).textRange().start(), lastConvertedChild.textRange().end()));
+    return new NativeTreeImpl(metaData, new SJavaNativeKind(t.kind().toString()), children);
   }
 
 

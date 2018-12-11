@@ -2,14 +2,14 @@ AST node class                         | first…last tokens | line:col
 ---------------------------------------|-------------------|--------------
 TopLevelTree {                         | public … }        | 20:1 … 33:1  
   ClassDeclarationTree {               | public … }        | 20:1 … 32:2  
-    ?CLASS? {                          | public … }        | 20:1 … 32:2  
+    ?CLASS? {                          | public … }        | 21:3 … 31:4  
       FunctionDeclarationTree {        | public … }        | 21:3 … 31:4  
         IdentifierTree                 | t                 | 21:15 … 21:16
         VariableDeclarationTree {      | Object … p        | 21:17 … 21:25
           IdentifierTree               | p                 | 21:24 … 21:25
         }                              |                   |              
         BlockTree {                    | { … }             | 21:27 … 31:4 
-          ?EXPRESSION_STATEMENT? {     | p … ;             | 22:5 … 22:18 
+          ?EXPRESSION_STATEMENT? {     | p … )             | 22:5 … 22:17 
             FunctionInvocationTree {   | p … )             | 22:5 … 22:17 
               MemberSelect {           | p … toString      | 22:5 … 22:15 
                 IdentifierTree         | p                 | 22:5 … 22:6  
@@ -24,7 +24,7 @@ TopLevelTree {                         | public … }        | 20:1 … 33:1
             }                          |                   |              
             BlockTree                  | { … }             | 24:18 … 24:21
           }                            |                   |              
-          ?EXPRESSION_STATEMENT? {     | p … ;             | 26:5 … 26:18 
+          ?EXPRESSION_STATEMENT? {     | p … )             | 26:5 … 26:17 
             FunctionInvocationTree {   | p … )             | 26:5 … 26:17 
               MemberSelect {           | p … toString      | 26:5 … 26:15 
                 IdentifierTree         | p                 | 26:5 … 26:6  
@@ -32,10 +32,10 @@ TopLevelTree {                         | public … }        | 20:1 … 33:1
               }                        |                   |              
             }                          |                   |              
           }                            |                   |              
-          ?EXPRESSION_STATEMENT? {     | p … ;             | 28:5 … 28:22 
+          ?EXPRESSION_STATEMENT? {     | p … )             | 28:5 … 28:21 
             AssignmentExpressionTree { | p … )             | 28:5 … 28:21 
               IdentifierTree           | p                 | 28:5 … 28:6  
-              ?NEW_CLASS? {            | new … )           | 28:9 … 28:21 
+              ?NEW_CLASS? {            | Object … )        | 28:13 … 28:21
                 IdentifierTree         | Object            | 28:13 … 28:19
                 ?ARGUMENTS?            | ( … )             | 28:19 … 28:21
               }                        |                   |              

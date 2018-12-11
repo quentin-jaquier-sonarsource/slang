@@ -1,4 +1,16 @@
 class A {
+  private void createGUI(DialogOwner owner) {
+    assertFalse(dialog == null, "error: null dialog"); // Noncompliant
+    //FP?
+    dialog.setLocation(50, 50);
+  }
+
+  int foo(Object p, boolean b) {
+    p.toString;
+    (p == null); // Compliant
+    p = "";
+  }
+
   int foo(Object p, boolean b) {
     int outputCapacity = output.length - outputOffset;
     int minOutSize = (decrypting ? (estOutSize - blockSize) : estOutSize);
@@ -22,6 +34,16 @@ class A {
   int foo(Object p, boolean b) {
     if(p == null) {} // Compliant
     p.toString;
+  }
+
+  int foo(Object p, boolean b) {
+    if (cond) {
+      String s = "";
+      s.toString();
+    } else {
+      String s;
+      (s == null); // Compliant, variable declaration kill the same way as the assignmnet
+    }
   }
 
   int loop0(Object p, boolean b) {
@@ -370,15 +392,12 @@ class A {
     if(p == null){ } // Compliant, FN due to for loop head
   }
 
-  private Map.Entry<K,V> lowestEntry() {
-    for (; ; ) {
-      ConcurrentSkipListMap.Node<K, V> n = loNode();
-      if (!isBeforeEnd(n))
-        return null;
-      Map.Entry<K, V> e = n.createSnapshot();
-      if (e != null)
-        return e;
+  public int assignInsideHeader(Component a, Component b) {
+    a.getParent();
+    for (int i = 0; a != null; a = a.getParent()) {
+      b = 1;
     }
+    if (a == null) { } // Compliant, a is assigned inside the header (that is a native)
   }
 
   //== Exception =======================================
@@ -418,7 +437,21 @@ class A {
     try{
       doSomething();
     } catch(Exception e) {
+      doSomething();
+    } finally {
       b = new Object();
+    }
+
+    if(b == null){ } // Compliant, the finally path reasign the value
+  }
+
+  void foo(boolean a, Object b) {
+    try{
+      b.toString();
+      if(b == null){ } // Compliant, might be considered as a FN... (due to the fact that we don't gen in try block)
+    } catch(Exception e) {
+      if(b == null){ } // Compliant, the NP might have been catched.
+      doSomething();
     }
 
     if(b == null){ } // Compliant
@@ -426,16 +459,14 @@ class A {
 
   void foo(boolean a, Object b) {
     b.toString();
-
     try{
-      doSomething();
+      if(b == null){ } // Noncompliant
     } catch(Exception e) {
+      if(b == null){ } // Noncompliant
       doSomething();
-    } finally {
-      b = new Object();
     }
 
-    if(b == null){ } // Compliant
+    if(b == null){ } // Noncompliant
   }
 
   void doSomething() { }
