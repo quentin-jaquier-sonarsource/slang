@@ -447,10 +447,10 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(8, cfg.blocks().size());
-    assertTrue(cfg.isReliable());
-    assertEquals(2, cfg.blocks().get(3).elements().size()); //Throw block: throw + identifier e
-    assertEquals(5, cfg.blocks().get(5).elements().size()); //catch block: 2 + 3
+    assertEquals(10, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
+    assertEquals(2, cfg.blocks().get(4).elements().size()); //Throw block: throw + identifier e
+    assertEquals(5, cfg.blocks().get(7).elements().size()); //catch block: 2 + 3
   }
 
   @Test

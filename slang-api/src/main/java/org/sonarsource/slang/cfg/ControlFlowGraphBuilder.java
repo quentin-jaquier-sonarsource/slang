@@ -312,7 +312,9 @@ class ControlFlowGraphBuilder {
     SlangCfgBlock tryBodySuccessors = createMultiSuccessorBlock(bodySuccessors);
     addBreakable(tryBodySuccessors, tryBodySuccessors);
     exitTargets.push(new TryBodyEnd(tryBodySuccessors, finallyBlock));
-    SlangCfgBlock tryBodyStartingBlock = build(tree.tryBlock(), tryBodySuccessors);
+    reliableSubFlow ++;
+    SlangCfgBlock tryBodyStartingBlock = buildSubFlow(tree.tryBlock(), tryBodySuccessors);
+    reliableSubFlow --;
     throwTargets.pop();
     exitTargets.pop();
     removeBreakable();
