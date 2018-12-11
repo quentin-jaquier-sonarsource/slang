@@ -60,6 +60,7 @@ import org.sonarsource.slang.api.TextRange;
 import org.sonarsource.slang.api.Token;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.TreeMetaData;
+import org.sonarsource.slang.api.UnaryExpressionTree;
 import org.sonarsource.slang.impl.AssignmentExpressionTreeImpl;
 import org.sonarsource.slang.impl.BinaryExpressionTreeImpl;
 import org.sonarsource.slang.impl.BlockTreeImpl;
@@ -84,6 +85,7 @@ import org.sonarsource.slang.impl.ThrowTreeImpl;
 import org.sonarsource.slang.impl.TokenImpl;
 import org.sonarsource.slang.impl.TopLevelTreeImpl;
 import org.sonarsource.slang.impl.TreeMetaDataProvider;
+import org.sonarsource.slang.impl.UnaryExpressionTreeImpl;
 import org.sonarsource.slang.impl.VariableDeclarationTreeImpl;
 
 public class SJavaConverter implements ASTConverter {
@@ -216,6 +218,8 @@ public class SJavaConverter implements ASTConverter {
         return createBinaryExpression((org.sonar.plugins.java.api.tree.BinaryExpressionTree) t, BinaryExpressionTree.Operator.CONDITIONAL_AND);
       case VARIABLE:
         return createVariableTree((VariableTree) t);
+      case LOGICAL_COMPLEMENT:
+        return createUnaryExpression((org.sonar.plugins.java.api.tree.UnaryExpressionTree) t, UnaryExpressionTree.Operator.NEGATE);
       case PARENTHESIZED_EXPRESSION:
         return new ParenthesizedExpressionTreeImpl(metaData(t), convert(((ParenthesizedTree)t).expression()),
             keyword(((ParenthesizedTree) t).openParenToken()),
@@ -247,6 +251,9 @@ public class SJavaConverter implements ASTConverter {
    return new BinaryExpressionTreeImpl(metaData(t), operator, keyword(t.operatorToken()),
     convert(t.leftOperand()),
     convert(t.rightOperand()));
+  }
+  private Tree createUnaryExpression(org.sonar.plugins.java.api.tree.UnaryExpressionTree t, UnaryExpressionTree.Operator operator) {
+    return new UnaryExpressionTreeImpl(metaData(t), operator, convert(t.expression()));
   }
 
   private IdentifierTree createIdentifierTree(org.sonar.plugins.java.api.tree.IdentifierTree t) {

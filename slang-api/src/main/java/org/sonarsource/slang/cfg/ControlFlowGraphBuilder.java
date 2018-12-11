@@ -35,6 +35,7 @@ import java.util.Set;
 
 import java.util.stream.Collectors;
 import org.sonarsource.slang.api.AssignmentExpressionTree;
+import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.BlockTree;
 import org.sonarsource.slang.api.CatchTree;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
@@ -108,13 +109,12 @@ class ControlFlowGraphBuilder {
   private SlangCfgBlock build(List<? extends Tree> trees, SlangCfgBlock successor) {
     SlangCfgBlock currentBlock = successor;
     for (Tree tree : Lists.reverse(trees)) {
+      currentBlock = build(tree, currentBlock);
       //Break the current block if the next part is unreliable (and not still in unreliable block)
       if(!currentBlock.isReliable() && (reliableSubFlow == 0)){
         currentBlock = createSimpleBlock(currentBlock);
       }
-      currentBlock = build(tree, currentBlock);
     }
-
     return currentBlock;
   }
 
@@ -140,20 +140,18 @@ class ControlFlowGraphBuilder {
       return buildExceptionHandling((ExceptionHandlingTree)tree, currentBlock);
     } else if(tree instanceof AssignmentExpressionTree) {
       return buildAssignmentExpression((AssignmentExpressionTree) tree, currentBlock);
+    } else if(tree instanceof BinaryExpressionTree && isUnReliableBinaryExpression(tree)) {
+      BinaryExpressionTree binOp = (BinaryExpressionTree) tree;
+      reliableSubFlow ++;
+      SlangCfgBlock nativeB = buildSubFlow(binOp.rightOperand(), currentBlock);
+      reliableSubFlow --;
+      SlangCfgBlock temp = buildSubFlow(binOp.leftOperand(), nativeB);
+      temp.addElement(tree);
+      return temp;
     } else if(tree instanceof NativeTree) {
-      if(tree.children().isEmpty()){
-        currentBlock.addElement(tree);
-        return currentBlock;
-      } else if(tree.children().size() == 1) {
-        //Add the child independently
-        return build(tree.children(), currentBlock);
-      } else {
-        reliableSubFlow ++;
-        SlangCfgBlock nativeB = buildSubFlow(tree.children(), currentBlock);
-        reliableSubFlow --;
-        return nativeB;
-      }
+      return createUnreliableBlock(tree, currentBlock);
     } else {
+      //All "known" blocks
       if(tree != null) {
         if(!tree.children().isEmpty()) {
           currentBlock =  build(tree.children(), currentBlock);
@@ -161,6 +159,30 @@ class ControlFlowGraphBuilder {
         currentBlock.addElement(tree);
       }
       return currentBlock;
+    }
+  }
+
+  private boolean isUnReliableBinaryExpression(Tree t) {
+    if(t instanceof BinaryExpressionTree) {
+      BinaryExpressionTree binOp = (BinaryExpressionTree)t;
+      return binOp.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_OR) || binOp.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_AND);
+    } else {
+      return false;
+    }
+  }
+
+  private SlangCfgBlock createUnreliableBlock(Tree tree, SlangCfgBlock currentBlock) {
+    if(tree.children().isEmpty()){
+      currentBlock.addElement(tree);
+      return currentBlock;
+    } else if(tree.children().size() == 1) {
+      //Add the child independently
+      return build(tree.children(), currentBlock);
+    } else {
+      reliableSubFlow ++;
+      SlangCfgBlock nativeB = buildSubFlow(tree.children(), currentBlock);
+      reliableSubFlow --;
+      return nativeB;
     }
   }
 

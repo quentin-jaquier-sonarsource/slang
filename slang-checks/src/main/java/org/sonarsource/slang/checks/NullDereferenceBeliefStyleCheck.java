@@ -20,6 +20,7 @@
 package org.sonarsource.slang.checks;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.Deque;
 import java.util.HashMap;
@@ -129,6 +130,7 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         kill.put(block, blockKill);
         gen.put(block, blockGen);
       }
+
       nullTracking.analyzeCFG(kill, gen);
 
       // Make things immutable.
@@ -187,62 +189,12 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
           }
         } else if(element instanceof VariableDeclarationTree){
           processVariable(((VariableDeclarationTree) element).identifier(), blockKill, blockGen);
-        } else if(element instanceof BinaryExpressionTree) {
-            shortCircuited.addAll(processBinaryExpression((BinaryExpressionTree)element));
         }
       }
+      //Remove from the current block
       blockGen.removeAll(shortCircuited);
     }
-
-    private Set<String> processBinaryExpression(BinaryExpressionTree element) {
-      //Search for pointer check for null followed by their use to remove them from gen set
-      Set<String> shortCircuited = new HashSet<>();
-      if (element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_OR)) {
-        Tree leftTree = skipParentheses(element.leftOperand());
-        if (leftTree instanceof BinaryExpressionTree) {
-          String temp = processSubBinaryExpression((BinaryExpressionTree) leftTree, BinaryExpressionTree.Operator.EQUAL_TO);
-          if(temp != null){
-            shortCircuited.add(temp);
-          }
-        }
-        Tree rightTree = skipParentheses(element.rightOperand());
-        if (rightTree instanceof BinaryExpressionTree) {
-          String temp =  processSubBinaryExpression((BinaryExpressionTree) rightTree, BinaryExpressionTree.Operator.EQUAL_TO);
-          if(temp != null){
-            shortCircuited.add(temp);
-          }
-        }
-      }
-      if (element.operator().equals(BinaryExpressionTree.Operator.CONDITIONAL_AND)) {
-        Tree leftTree = skipParentheses(element.leftOperand());
-        if (leftTree instanceof BinaryExpressionTree) {
-          String temp = processSubBinaryExpression((BinaryExpressionTree) leftTree, BinaryExpressionTree.Operator.NOT_EQUAL_TO);
-          if(temp != null){
-            shortCircuited.add(temp);
-          }
-        }
-        Tree rightTree = skipParentheses(element.rightOperand());
-        if (rightTree instanceof BinaryExpressionTree) {
-          String temp = processSubBinaryExpression((BinaryExpressionTree) rightTree, BinaryExpressionTree.Operator.NOT_EQUAL_TO);
-          if(temp != null){
-            shortCircuited.add(temp);
-          }
-        }
-      }
-      return shortCircuited;
-    }
-
-    private String processSubBinaryExpression(BinaryExpressionTree element, BinaryExpressionTree.Operator operator) {
-      if (element.operator().equals(operator) && element.leftOperand() instanceof IdentifierTree && element.rightOperand() instanceof LiteralTree) {
-        IdentifierTree lhs = (IdentifierTree) element.leftOperand();
-        LiteralTree rhs = (LiteralTree) element.rightOperand();
-        if (rhs.value().equals("null")) {
-          return lhs.name();
-        }
-      }
-      return null;
-    }
-
+    
     private void processVariable(IdentifierTree element, Set<String> blockKill, Set<String> blockGen) {
       blockKill.add(element.name());
       blockGen.remove(element.identifier());

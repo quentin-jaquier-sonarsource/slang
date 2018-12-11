@@ -1,7 +1,5 @@
 class A {
-
   int foo(Object p, boolean b) {
-
     int outputCapacity = output.length - outputOffset;
     int minOutSize = (decrypting ? (estOutSize - blockSize) : estOutSize);
     if ((output == null) || (outputCapacity < minOutSize)) { // Noncompliant
@@ -114,7 +112,22 @@ class A {
   int shortcircuit01(Object p, boolean b) {
     p == null || p.toString(); // Compliant
     p.toString();
-    if(p == null) {} // Compliant, FN, see todo
+    if(p == null) {} // NonCompliant
+  }
+
+  int shortcircuit01(Object p, boolean b) {
+    p.size() == 0;
+    if(p == null) {} // NonCompliant
+  }
+
+  int shortcircuit01(Object p, boolean b) {
+    p.isEmpty() || b;
+    if(p == null) {} // NonCompliant
+  }
+
+  int shortcircuit01(Object p, boolean b) {
+    b == 0 || p.size() || b == 0;
+    if(p == null) {} // Compliant, FN, due to binop beeing unreliable
   }
 
   int shortcircuit0(Object p, boolean b) {
@@ -122,11 +135,11 @@ class A {
   }
 
   int shortcircuit15(Object p, boolean b) {
-    if(p.equals("a") || p == null){} // Compliant, FN, due to the naive short circuit
+    if(p.equals("a") || p == null){} // Noncompliant
   }
 
   int shortcircuit152(Object p, boolean b) {
-    if(p.toString().equals("a") || p == null){} // Compliant, multiple method select are not supported
+    if(p.toString().equals("a") || p == null){} // Noncompliant
   }
 
   int shortcircuit2(Object p, boolean b) {
@@ -146,6 +159,15 @@ class A {
   }
 
   int shortcircuit01(Object p, boolean b) {
+    ((q == null) && p == null) || p.toString(); // Compliant
+  }
+
+  int shortcircuit01(Object p, boolean b) {
+    ((q == null) && p == null) || p.toString(); // Compliant
+    (p == null); // Compliant
+  }
+
+  int shortcircuit01(Object p, boolean b) {
     q == null || q.toString() || (q == a) || p == null || p.toString(); // Compliant
   }
 
@@ -155,12 +177,23 @@ class A {
   }
 
   int shortcircuit152(Object p, boolean b) {
-    if(p.toString() || p == null){} // Compliant, multiple method select are not supported
+    if(p.toString() || p == null){} // Noncompliant
   }
+
+  void shortCircuit(XWindow p) {
+    (!(target instanceof Container) || p == null || p.getTarget());
+  }
+
+  int shortcircuit152(Object p, boolean b) {
+    ((p = next()) == null || p.toString()); // Compliant
+    if(p == null){} // Compliant
+  }
+
+  //==========================================================
 
   int f(Object p, boolean b) {
     p.toString();
-    p == null;// Compliant, FN, it works with a IF because the next line will be in another block
+    p == null; // Compliant, FN, it works with a IF because the next line will be in another block
     //This may seems bad, but we initially want to find check in if, finding this kind of checks is only bonus
     p = "";
   }

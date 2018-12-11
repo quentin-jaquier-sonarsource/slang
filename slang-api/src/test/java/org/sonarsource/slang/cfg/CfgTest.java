@@ -54,6 +54,26 @@ import static org.sonarsource.slang.utils.TreeCreationUtils.throwTree;
 
 public class CfgTest {
 
+  @Test
+  public void testBinOp() {
+     /*
+      (A || B) || (C || D);
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(binary(BinaryExpressionTree.Operator.CONDITIONAL_OR,
+        binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("A"), identifier("B")),
+        binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("C"), identifier("D"))));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(6, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
+  }
 
   @Test
   public void testOreAssign() {
@@ -70,8 +90,8 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(3, cfg.blocks().size());
-    assertTrue(cfg.isReliable());
+    assertEquals(5, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
   }
 
   @Test
@@ -81,7 +101,7 @@ public class CfgTest {
      */
     List<Tree> body = new ArrayList<>();
 
-    body.add(assignment(identifier("a"), binary(BinaryExpressionTree.Operator.CONDITIONAL_OR, identifier("b"), identifier("c"))));
+    body.add(assignment(identifier("a"), binary(BinaryExpressionTree.Operator.EQUAL_TO, identifier("b"), identifier("c"))));
 
     FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
 
@@ -354,9 +374,9 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(6, cfg.blocks().size());
-    assertEquals(7, cfg.blocks().get(3).elements().size());
-    assertTrue(cfg.isReliable());
+    assertEquals(7, cfg.blocks().size());
+    assertEquals(6, cfg.blocks().get(3).elements().size());
+    assertFalse(cfg.isReliable());
   }
 
   @Test
@@ -374,9 +394,9 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(3, cfg.blocks().size());
-    assertEquals(4, cfg.blocks().get(2).elements().size());
-    assertTrue(cfg.isReliable());
+    assertEquals(4, cfg.blocks().size());
+    assertEquals(3, cfg.blocks().get(2).elements().size());
+    assertFalse(cfg.isReliable());
   }
 
   @Test
@@ -691,9 +711,9 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(5, cfg.blocks().size());
+    assertEquals(6, cfg.blocks().size());
 
-    assertEquals(3, cfg.blocks().get(2).elements().size());
+    assertEquals(3, cfg.blocks().get(5).elements().size());
   }
 
   @Test
@@ -718,9 +738,9 @@ public class CfgTest {
 
     System.out.println(CfgPrinter.toDot(cfg));
 
-    assertEquals(4, cfg.blocks().size());
-    assertTrue(cfg.isReliable());
-    assertEquals(3, cfg.blocks().get(2).elements().size());
+    assertEquals(6, cfg.blocks().size());
+    assertFalse(cfg.isReliable());
+    assertEquals(2, cfg.blocks().get(2).elements().size());
   }
 
   @Test
