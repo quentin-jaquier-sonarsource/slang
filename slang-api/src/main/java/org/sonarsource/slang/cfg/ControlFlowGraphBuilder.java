@@ -38,7 +38,9 @@ import org.sonarsource.slang.api.AssignmentExpressionTree;
 import org.sonarsource.slang.api.BinaryExpressionTree;
 import org.sonarsource.slang.api.BlockTree;
 import org.sonarsource.slang.api.CatchTree;
+import org.sonarsource.slang.api.ClassDeclarationTree;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
+import org.sonarsource.slang.api.FunctionDeclarationTree;
 import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LoopTree;
@@ -119,27 +121,31 @@ class ControlFlowGraphBuilder {
   }
 
   private SlangCfgBlock build(Tree tree, SlangCfgBlock currentBlock) {
-    if(!(reliableSubFlow == 0)){
+    if (!(reliableSubFlow == 0)) {
       makeUnreliable(currentBlock);
     }
-    if(tree instanceof MatchTree) {
+    if (tree instanceof MatchTree) {
       return buildMatchTree((MatchTree) tree, currentBlock);
-    } else if(tree instanceof JumpTree) {
-      return buildJumpTree((JumpTree)tree, currentBlock);
-    } else if(tree instanceof BlockTree){
-      return buildBlock((BlockTree)tree, currentBlock);
-    } else if(tree instanceof IfTree) {
+    } else if (tree instanceof JumpTree) {
+      return buildJumpTree((JumpTree) tree, currentBlock);
+    } else if (tree instanceof BlockTree) {
+      return buildBlock((BlockTree) tree, currentBlock);
+    } else if (tree instanceof IfTree) {
       return buildIfStatement((IfTree) tree, currentBlock);
-    } else if(tree instanceof LoopTree) {
+    } else if (tree instanceof LoopTree) {
       return buildLoopStatement((LoopTree) tree, currentBlock);
-    } else if(tree instanceof ReturnTree) {
+    } else if (tree instanceof ReturnTree) {
       return buildReturnStatement((ReturnTree) tree, currentBlock);
-    } else if(tree instanceof ThrowTree) {
+    } else if (tree instanceof ThrowTree) {
       return buildThrowStatement((ThrowTree) tree, currentBlock);
-    } else if(tree instanceof ExceptionHandlingTree) {
-      return buildExceptionHandling((ExceptionHandlingTree)tree, currentBlock);
-    } else if(tree instanceof AssignmentExpressionTree) {
+    } else if (tree instanceof ExceptionHandlingTree) {
+      return buildExceptionHandling((ExceptionHandlingTree) tree, currentBlock);
+    } else if (tree instanceof AssignmentExpressionTree) {
       return buildAssignmentExpression((AssignmentExpressionTree) tree, currentBlock);
+    } else if(tree instanceof ClassDeclarationTree || tree instanceof FunctionDeclarationTree) {
+      //Simply add the class or function, but not the children
+      currentBlock.addElement(tree);
+      return currentBlock;
     } else if(tree instanceof BinaryExpressionTree && isUnReliableBinaryExpression(tree)) {
       BinaryExpressionTree binOp = (BinaryExpressionTree) tree;
       reliableSubFlow ++;
