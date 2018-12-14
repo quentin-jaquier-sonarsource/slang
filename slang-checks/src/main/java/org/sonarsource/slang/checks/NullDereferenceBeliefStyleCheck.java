@@ -40,6 +40,7 @@ import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.LiteralTree;
 import org.sonarsource.slang.api.MemberSelect;
 import org.sonarsource.slang.api.NativeTree;
+import org.sonarsource.slang.api.ParameterTree;
 import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.VariableDeclarationTree;
 import org.sonarsource.slang.cfg.CfgBlock;
@@ -61,23 +62,41 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         ControlFlowGraph cfg = ControlFlowGraph.build(functionDeclarationTree);
         NullTracking nullTracking = NullTracking.analyse(cfg);
 
+        Set<String> localIdentifier =
+            functionDeclarationTree.descendants()
+                .filter(tree -> tree instanceof VariableDeclarationTree)
+                .map(VariableDeclarationTree.class::cast)
+                .map(VariableDeclarationTree::identifier)
+                .map(IdentifierTree::name)
+                .collect(Collectors.toSet());
+
+        Set<String> parameters =
+            functionDeclarationTree.formalParameters().stream()
+                .filter(ParameterTree.class::isInstance)
+                .map(ParameterTree.class::cast)
+                .map(ParameterTree::identifier)
+                .map(IdentifierTree.class::cast)
+                .map(IdentifierTree::name).collect(Collectors.toSet());
+
+        localIdentifier.addAll(parameters);
+
         for (CfgBlock block : cfg.blocks()) {
-          block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx, cfg));
+          block.elements().forEach(element -> checkElement(element, nullTracking.getOut(block), ctx, cfg, localIdentifier));
         }
       }
     });
   }
 
-  private void checkElement(Tree element, Set<String> out, CheckContext ctx, ControlFlowGraph cfg) {
+  private void checkElement(Tree element, Set<String> out, CheckContext ctx, ControlFlowGraph cfg, Set<String> localIdentifier) {
     if(element instanceof BinaryExpressionTree){
       BinaryExpressionTree binOp = (BinaryExpressionTree) element;
       if(binOp.operator().equals(BinaryExpressionTree.Operator.EQUAL_TO)){
-        processEqualTo(binOp, out, ctx, cfg);
+        processEqualTo(binOp, out, ctx, cfg, localIdentifier);
       }
     }
   }
 
-  private void processEqualTo(BinaryExpressionTree element, Set<String> out, CheckContext ctx, ControlFlowGraph cfg) {
+  private void processEqualTo(BinaryExpressionTree element, Set<String> out, CheckContext ctx, ControlFlowGraph cfg, Set<String> localIdentifier) {
     if(element.rightOperand() instanceof LiteralTree) {
       IdentifierTree lhs = NullTracking.getIdentifierIfPresent(element.leftOperand());
       if(lhs == null){
@@ -97,7 +116,7 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         return;
       }
 
-      if(out.contains(pointerChecked)) {
+      if(out.contains(pointerChecked) && localIdentifier.contains(pointerChecked)) {
         ctx.reportIssue(element, "This check is either always false, or a null pointer has been raised before.");
       }
     }

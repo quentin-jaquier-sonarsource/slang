@@ -1,5 +1,15 @@
 class A {
-  private void createGUI(DialogOwner owner) {
+  public void processTransactionTerminated(final TransactionTerminatedEvent transactionTerminatedEvent) {
+    Transaction transaction = eventTransaction;
+    String branchId = transaction.getBranchId();
+    getAsynchronousExecutor().execute(new Runnable() {
+      public void run() {
+        if(transaction == null) {} // Compliant
+      }
+    });
+  }
+
+  private void createGUI(DialogOwner dialog) {
     assertFalse(dialog == null, "error: null dialog"); // Noncompliant
     //FP?
     dialog.setLocation(50, 50);
@@ -11,7 +21,7 @@ class A {
     p = "";
   }
 
-  int foo(Object p, boolean b) {
+  int foo(Object output, boolean b) {
     int outputCapacity = output.length - outputOffset;
     int minOutSize = (decrypting ? (estOutSize - blockSize) : estOutSize);
     if ((output == null) || (outputCapacity < minOutSize)) { // Noncompliant
@@ -88,8 +98,6 @@ class A {
     if(p == null) { } // Noncompliant
   }
 
-
-
   int assign(Object p, boolean b) {
     foo6 = p.toString();
     if(p == null) {} // Noncompliant
@@ -103,6 +111,12 @@ class A {
   int foo4(Object p, boolean b) {
     String s = a ? p.f(q.toString()) : (q == null);
   }
+
+  int foo(boolean b) {
+    p.toString;
+    if(p == null) {} // Compliant, FN, p is a field
+  }
+
 
   //== Short circuit ===================================================
 
@@ -220,7 +234,7 @@ class A {
     p = "";
   }
 
-  int foo5(Object p, boolean b) {
+  int foo5(Object levelImpl, boolean b) {
     if (!level.equals(levelImpl.toString())) {
       if (levelImpl == null) { // Noncompliant
         levelImpl = Level.DEBUG;
@@ -522,8 +536,7 @@ class A {
       s.toString();
       changeS(); // An other method can change the value of s!
 
-      if(s == null) { // Noncompliant
-        //, s is a field FP
+      if(s == null) { // Compliant, s is a field
 
       }
     }
