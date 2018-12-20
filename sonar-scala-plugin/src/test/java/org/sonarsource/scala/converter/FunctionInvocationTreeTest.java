@@ -32,17 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.sonarsource.slang.testing.TreeAssert.assertTree;
 
 public class FunctionInvocationTreeTest extends AbstractScalaConverterTest {
-
-  @Test
-  public void if_without_else() {
-    Tree tree = scalaStatement("def method(param: Int): Int = { val p = 1;\n\np.toString()\nif(p == null){ }\n }");
-
-    System.out.println("s");
-
-    ControlFlowGraph cfg = ControlFlowGraph.build((FunctionDeclarationTree) tree);
-    System.out.println("");
-  }
-
+  
   @Test
   public void fun_Invocation() {
     Tree tree = scalaStatement("p.toString()");

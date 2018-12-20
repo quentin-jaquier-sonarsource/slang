@@ -1,4 +1,5 @@
 class A {
+
   public void processTransactionTerminated(final TransactionTerminatedEvent transactionTerminatedEvent) {
     Transaction transaction = eventTransaction;
     String branchId = transaction.getBranchId();
@@ -414,6 +415,14 @@ class A {
     if (a == null) { } // Compliant, a is assigned inside the header (that is a native)
   }
 
+  int newPInLoop(Object p, boolean b) {
+    p.toString();
+    while (cond) {
+      Object p = getP();
+      if(p == null){ } // Compliant, p that is used is not the same as the one that is checked
+    }
+  }
+
   //== Exception =======================================
 
   void foo(boolean a, Object b) {
@@ -523,6 +532,13 @@ class A {
     p[0] = 1;
     if(p == null){ // Compliant, FN array not supported
 
+    }
+  }
+
+  void nullArrayAcess(int[] p) {
+    int l = p.length;
+    if(p == null) { // Noncompliant
+      //p.length is a seen as a member select in Slang
     }
   }
 
