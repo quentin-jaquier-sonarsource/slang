@@ -68,7 +68,10 @@ class ControlFlowGraphBuilder {
 
   private int reliableSubFlow = 0;
 
-  public ControlFlowGraphBuilder(List<? extends Tree> items) {
+  private boolean breakEquals;
+
+  public ControlFlowGraphBuilder(boolean breakEquals, List<? extends Tree> items) {
+    this.breakEquals = breakEquals;
     throwTargets.push(end);
     exitTargets.push(new TryBodyEnd(end, end));
     start = build(items, createSimpleBlock(end));
@@ -76,6 +79,10 @@ class ControlFlowGraphBuilder {
     start = createSimpleBlock(start);
     blocks.add(end);
     computePredecessors();
+  }
+
+  public ControlFlowGraphBuilder(List<? extends Tree> items) {
+    this(false, items);
   }
 
   ControlFlowGraph getGraph() {
@@ -159,10 +166,18 @@ class ControlFlowGraphBuilder {
     } else {
       //All "known" blocks
       if(tree != null) {
+        if(breakEquals && tree instanceof BinaryExpressionTree && (((BinaryExpressionTree) tree).operator().equals(BinaryExpressionTree.Operator.EQUAL_TO)
+        || ((BinaryExpressionTree) tree).operator().equals(BinaryExpressionTree.Operator.NOT_EQUAL_TO))) {
+          currentBlock = createSimpleBlock(currentBlock);
+        }
         if(!tree.children().isEmpty()) {
           currentBlock =  build(tree.children(), currentBlock);
         }
         currentBlock.addElement(tree);
+        if(breakEquals && tree instanceof BinaryExpressionTree && (((BinaryExpressionTree) tree).operator().equals(BinaryExpressionTree.Operator.EQUAL_TO)
+            || ((BinaryExpressionTree) tree).operator().equals(BinaryExpressionTree.Operator.NOT_EQUAL_TO))) {
+          currentBlock = createSimpleBlock(currentBlock);
+        }
       }
       return currentBlock;
     }
@@ -361,7 +376,7 @@ class ControlFlowGraphBuilder {
       case FOR:
         return buildForStatement(tree, successor);
       default:
-          throw new UnsupportedOperationException("Unknown loop tree kind");
+        throw new UnsupportedOperationException("Unknown loop tree kind");
     }
   }
 

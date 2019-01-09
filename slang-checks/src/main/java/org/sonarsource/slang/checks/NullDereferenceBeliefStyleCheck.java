@@ -59,7 +59,7 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
   public void initialize(InitContext init) {
     init.register(FunctionDeclarationTree.class, (ctx, functionDeclarationTree) -> {
       if(functionDeclarationTree.body() != null){
-        ControlFlowGraph cfg = ControlFlowGraph.build(functionDeclarationTree);
+        ControlFlowGraph cfg = ControlFlowGraph.build(functionDeclarationTree, true);
         NullTracking nullTracking = NullTracking.analyse(cfg);
 
         Set<String> localIdentifier =

@@ -39,8 +39,16 @@ public class ControlFlowGraph {
     this.reliable = reliable;
   }
 
+  public static ControlFlowGraph build(FunctionDeclarationTree function, boolean breakEquals) {
+    return build(function.body(), breakEquals);
+  }
+
   public static ControlFlowGraph build(FunctionDeclarationTree function) {
     return build(function.body());
+  }
+
+  public static ControlFlowGraph build(BlockTree body, boolean breakEquals) {
+    return new ControlFlowGraphBuilder(breakEquals, body.statementOrExpressions()).getGraph();
   }
 
   public static ControlFlowGraph build(BlockTree body) {

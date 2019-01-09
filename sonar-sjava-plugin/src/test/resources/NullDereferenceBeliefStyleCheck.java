@@ -1,5 +1,41 @@
 class A {
 
+  int f(Object p, boolean b) {
+    p.toString();
+    p == null; // Noncompliant
+    p = "";
+  }
+
+  int f(Object p, boolean b) {
+    p.toString();
+    p = "";
+    p == null; // Compliant
+  }
+
+  int f(Object p, boolean b) {
+    p = "";
+    p.toString();
+    p == null; // Noncompliant
+  }
+
+  int f(Object p, boolean b) {
+    p == null; // Compliant
+    p.toString();
+    p = "";
+  }
+
+  int f(Object p, boolean b) {
+    p == null; // Compliant
+    p = "";
+    p.toString();
+  }
+
+  int f(Object p, boolean b) {
+    p == null; // Compliant
+    p = "";
+    p.toString();
+  }
+
   public void processTransactionTerminated(final TransactionTerminatedEvent transactionTerminatedEvent) {
     Transaction transaction = eventTransaction;
     String branchId = transaction.getBranchId();
@@ -11,15 +47,8 @@ class A {
   }
 
   private void createGUI(DialogOwner dialog) {
-    assertFalse(dialog == null, "error: null dialog"); // Noncompliant
-    //FP?
+    assertFalse(dialog == null, "error: null dialog"); // Compliant
     dialog.setLocation(50, 50);
-  }
-
-  int foo(Object p, boolean b) {
-    p.toString;
-    (p == null); // Compliant
-    p = "";
   }
 
   int foo(Object output, boolean b) {
@@ -29,12 +58,6 @@ class A {
       throw new ShortBufferException("Output buffer must be "
           + "(at least) " + minOutSize + " bytes long");
     }
-  }
-
-  int foo(Object p, boolean b) {
-    p.toString;
-    (p == null); // Compliant
-    p = "";
   }
 
   int foo(Object p, boolean b) {
@@ -180,7 +203,7 @@ class A {
   }
 
   int shortcircuit2(Object p, boolean b) {
-    f(p == null, p.toString()); // Noncompliant
+    f(p == null, p.toString()); // Compliant
   }
 
   int shortcircuit25(Object p, boolean b) {
@@ -228,12 +251,7 @@ class A {
 
   //==========================================================
 
-  int f(Object p, boolean b) {
-    p.toString();
-    p == null; // Compliant, FN, it works with a IF because the next line will be in another block
-    //This may seems bad, but we initially want to find check in if, finding this kind of checks is only bonus
-    p = "";
-  }
+
 
   int foo5(Object levelImpl, boolean b) {
     if (!level.equals(levelImpl.toString())) {
@@ -268,7 +286,7 @@ class A {
   }
 
   int noIf2(Object p) {
-    boolean b = p == null; // Noncompliant
+    boolean b = p == null; // Compliant, forward analysis
     p.toString();
   }
 

@@ -773,4 +773,49 @@ public class CfgTest {
     assertFalse(cfg.isReliable());
   }
 
+  @Test
+  public void testBreakAfterEquals() {
+     /*
+      a = 1;
+      a == b;
+      b = 2;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), identifier("1")));
+    body.add(binary(BinaryExpressionTree.Operator.EQUAL_TO, identifier("a"), identifier("b")));
+    body.add(assignment(identifier("b"), identifier("3")));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f, true);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(5, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
+  }
+
+  @Test
+  public void testBreakAfterNotEquals() {
+     /*
+      a = 1;
+      a != b;
+      b = 2;
+     */
+    List<Tree> body = new ArrayList<>();
+
+    body.add(assignment(identifier("a"), identifier("1")));
+    body.add(binary(BinaryExpressionTree.Operator.NOT_EQUAL_TO, identifier("a"), identifier("b")));
+    body.add(assignment(identifier("b"), identifier("3")));
+
+    FunctionDeclarationTree f = simpleFunction(identifier("foo"), block(body));
+
+    ControlFlowGraph cfg = ControlFlowGraph.build(f, true);
+
+    System.out.println(CfgPrinter.toDot(cfg));
+
+    assertEquals(5, cfg.blocks().size());
+    assertTrue(cfg.isReliable());
+  }
 }
