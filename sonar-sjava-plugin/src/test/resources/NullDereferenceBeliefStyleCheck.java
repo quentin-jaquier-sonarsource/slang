@@ -1,4 +1,5 @@
 class A {
+  // =================================================
   int compliant3() {
     Object p = null;
     p.toString(); //Compliant, FN. Our checker is a naive version, the goal is not to find these kind of obvious NP.
@@ -254,7 +255,6 @@ class A {
     }
 
   }
-
   // BACKWARD =========================================
   int foo(Object p, boolean b) {
     if(p == null) { // Noncompliant
@@ -288,5 +288,17 @@ class A {
       p = new Object();
     }
     p.toString(); //Compliant
+  }
+
+  // TERNARY =========================================
+  int ternary(Object p, boolean b) {
+    b ? p.toString() : null;
+    if(p != null){ } // Compliant
+  }
+
+  int ternaryBack(Object p, boolean b) {
+    if(p != null){ } // Compliant
+    b ? p.toString() : null;
+
   }
 }

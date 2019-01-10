@@ -1,14 +1,14 @@
 AST node class                            | first…last tokens | line:col     
 ------------------------------------------|-------------------|--------------
-TopLevelTree {                            | public … }        | 20:1 … 41:1  
-  ClassDeclarationTree {                  | public … }        | 20:1 … 39:2  
-    ?CLASS? {                             | public … }        | 21:3 … 38:4  
-      FunctionDeclarationTree {           | public … }        | 21:3 … 38:4  
+TopLevelTree {                            | public … }        | 20:1 … 38:1  
+  ClassDeclarationTree {                  | public … }        | 20:1 … 36:2  
+    ?CLASS? {                             | public … }        | 21:3 … 35:4  
+      FunctionDeclarationTree {           | public … }        | 21:3 … 35:4  
         IdentifierTree                    | t                 | 21:15 … 21:16
         VariableDeclarationTree {         | int … i           | 21:17 … 21:22
           IdentifierTree                  | i                 | 21:21 … 21:22
         }                                 |                   |              
-        BlockTree {                       | { … }             | 21:24 … 38:4 
+        BlockTree {                       | { … }             | 21:24 … 35:4 
           VariableDeclarationTree {       | int … ;           | 22:5 … 22:27 
             IdentifierTree                | a                 | 22:11 … 22:12
             ?NEW_ARRAY? {                 | int … 12          | 22:19 … 22:25
@@ -29,51 +29,47 @@ TopLevelTree {                            | public … }        | 20:1 … 41:1
               LiteralTree                 | 10                | 24:12 … 24:14
             }                             |                   |              
           }                               |                   |              
-          VariableDeclarationTree {       | int … ;           | 26:5 … 26:19 
-            IdentifierTree                | i                 | 26:9 … 26:10 
-            ?ARRAY_ACCESS_EXPRESSION? {   | a … 11            | 26:13 … 26:17
-              IdentifierTree              | a                 | 26:13 … 26:14
-              ?ARRAY_DIMENSION? {         | 11                | 26:15 … 26:17
-                LiteralTree               | 11                | 26:15 … 26:17
+          VariableDeclarationTree {       | int … ;           | 26:5 … 26:20 
+            IdentifierTree                | ii                | 26:9 … 26:11 
+            ?ARRAY_ACCESS_EXPRESSION? {   | a … 11            | 26:14 … 26:18
+              IdentifierTree              | a                 | 26:14 … 26:15
+              ?ARRAY_DIMENSION? {         | 11                | 26:16 … 26:18
+                LiteralTree               | 11                | 26:16 … 26:18
               }                           |                   |              
             }                             |                   |              
           }                               |                   |              
-          ?EXPRESSION_STATEMENT? {        | a … length        | 29:5 … 29:13 
-            MemberSelect {                | a … length        | 29:5 … 29:13 
-              IdentifierTree              | a                 | 29:5 … 29:6  
-              IdentifierTree              | length            | 29:7 … 29:13 
+          VariableDeclarationTree {       | int … ;           | 28:5 … 28:22 
+            IdentifierTree                | k                 | 28:9 … 28:10 
+            MemberSelect {                | a … length        | 28:13 … 28:21
+              IdentifierTree              | a                 | 28:13 … 28:14
+              IdentifierTree              | length            | 28:15 … 28:21
             }                             |                   |              
           }                               |                   |              
-          ?EXPRESSION_STATEMENT? {        | a … null          | 31:5 … 31:13 
-            AssignmentExpressionTree {    | a … null          | 31:5 … 31:13 
-              IdentifierTree              | a                 | 31:5 … 31:6  
-              LiteralTree                 | null              | 31:9 … 31:13 
+          VariableDeclarationTree {       | boolean … ;       | 30:5 … 30:28 
+            IdentifierTree                | bb                | 30:13 … 30:15
+            BinaryExpressionTree {        | a … null          | 30:18 … 30:27
+              IdentifierTree              | a                 | 30:18 … 30:19
+              LiteralTree                 | null              | 30:23 … 30:27
             }                             |                   |              
           }                               |                   |              
-          ?EXPRESSION_STATEMENT? {        | a … 10            | 33:5 … 33:14 
-            AssignmentExpressionTree {    | a … 10            | 33:5 … 33:14 
-              ?ARRAY_ACCESS_EXPRESSION? { | a … 1             | 33:5 … 33:8  
-                IdentifierTree            | a                 | 33:5 … 33:6  
-                ?ARRAY_DIMENSION? {       | 1                 | 33:7 … 33:8  
-                  LiteralTree             | 1                 | 33:7 … 33:8  
+          ?EXPRESSION_STATEMENT? {        | a … 10            | 32:5 … 32:14 
+            AssignmentExpressionTree {    | a … 10            | 32:5 … 32:14 
+              ?ARRAY_ACCESS_EXPRESSION? { | a … 1             | 32:5 … 32:8  
+                IdentifierTree            | a                 | 32:5 … 32:6  
+                ?ARRAY_DIMENSION? {       | 1                 | 32:7 … 32:8  
+                  LiteralTree             | 1                 | 32:7 … 32:8  
                 }                         |                   |              
               }                           |                   |              
-              LiteralTree                 | 10                | 33:12 … 33:14
+              LiteralTree                 | 10                | 32:12 … 32:14
             }                             |                   |              
           }                               |                   |              
-          VariableDeclarationTree {       | int … ;           | 35:5 … 35:19 
-            IdentifierTree                | j                 | 35:9 … 35:10 
-            ?ARRAY_ACCESS_EXPRESSION? {   | a … 11            | 35:13 … 35:17
-              IdentifierTree              | a                 | 35:13 … 35:14
-              ?ARRAY_DIMENSION? {         | 11                | 35:15 … 35:17
-                LiteralTree               | 11                | 35:15 … 35:17
+          VariableDeclarationTree {       | int … ;           | 34:5 … 34:19 
+            IdentifierTree                | j                 | 34:9 … 34:10 
+            ?ARRAY_ACCESS_EXPRESSION? {   | a … 11            | 34:13 … 34:17
+              IdentifierTree              | a                 | 34:13 … 34:14
+              ?ARRAY_DIMENSION? {         | 11                | 34:15 … 34:17
+                LiteralTree               | 11                | 34:15 … 34:17
               }                           |                   |              
-            }                             |                   |              
-          }                               |                   |              
-          ?EXPRESSION_STATEMENT? {        | a … length        | 37:5 … 37:13 
-            MemberSelect {                | a … length        | 37:5 … 37:13 
-              IdentifierTree              | a                 | 37:5 … 37:6  
-              IdentifierTree              | length            | 37:7 … 37:13 
             }                             |                   |              
           }                               |                   |              
         }                                 |                   |              

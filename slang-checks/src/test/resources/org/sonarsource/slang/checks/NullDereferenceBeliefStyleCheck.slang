@@ -16,7 +16,7 @@ fun foo(Object p) {
 }
 
 fun foo(Object p) {
-   if(p == null){ }; //Compliant
+   if(p == null){ }; // Noncompliant
    p.toString(); //Compliant,even though we have not assign p
 }
 
@@ -78,7 +78,7 @@ fun loop(Object p, boolean b) {
 fun loop(Object p, boolean b) {
   other.toString();
   for(int var x = list){
-    if(p == null){ }; // Compliant
+    if(p == null){ }; // Noncompliant
     p.toString();
   };
 }

@@ -17,24 +17,21 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-public class loop {
+public class arrays {
   public void t(int i) {
     int[] a = new int[12];
 
     a[1] = 10;
 
-    int i = a[11];
+    int ii = a[11];
 
+    int k = a.length;
 
-    a.length;
-
-    a = null;
+    boolean bb = a == null;
 
     a[1] = 10;
 
     int j = a[11];
-
-    a.length;
   }
 }
 

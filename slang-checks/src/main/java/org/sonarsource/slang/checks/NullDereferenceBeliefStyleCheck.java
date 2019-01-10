@@ -84,23 +84,22 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
         localIdentifier.addAll(parameters);
 
         for (CfgBlock block : cfg.blocks()) {
-          Set<String> unionOut = Sets.union(nullTrackingForward.getOut(block), nullTrackingBackward.getOut(block));
-          block.elements().forEach(element -> checkElement(element, unionOut, ctx, cfg, localIdentifier));
+          block.elements().forEach(element -> checkElement(element, nullTrackingForward.getOut(block), nullTrackingBackward.getOut(block), ctx, cfg, localIdentifier));
         }
       }
     });
   }
 
-  private void checkElement(Tree element, Set<String> out, CheckContext ctx, ControlFlowGraph cfg, Set<String> localIdentifier) {
+  private void checkElement(Tree element, Set<String> out, Set<String> outBack, CheckContext ctx, ControlFlowGraph cfg, Set<String> localIdentifier) {
     if(element instanceof BinaryExpressionTree){
       BinaryExpressionTree binOp = (BinaryExpressionTree) element;
       if(binOp.operator().equals(BinaryExpressionTree.Operator.EQUAL_TO) || binOp.operator().equals(BinaryExpressionTree.Operator.NOT_EQUAL_TO)){
-        processEqualTo(binOp, out, ctx, cfg, localIdentifier);
+        processEqualTo(binOp, out, outBack, ctx, cfg, localIdentifier);
       }
     }
   }
 
-  private void processEqualTo(BinaryExpressionTree element, Set<String> out, CheckContext ctx, ControlFlowGraph cfg, Set<String> localIdentifier) {
+  private void processEqualTo(BinaryExpressionTree element, Set<String> out, Set<String> outBack, CheckContext ctx, ControlFlowGraph cfg, Set<String> localIdentifier) {
 
     IdentifierTree pointerCheckedForNull = null;
     if(element.rightOperand() instanceof LiteralTree) {
@@ -117,7 +116,11 @@ public class NullDereferenceBeliefStyleCheck implements SlangCheck {
 
     if(pointerCheckedForNull != null){
       if(out.contains(pointerCheckedForNull.name()) && localIdentifier.contains(pointerCheckedForNull.name())) {
-        ctx.reportIssue(element, "This check is either always false, or a null pointer has been raised before.");
+        ctx.reportIssue(element, "This check is either always false, or a null pointer has been raised before. FORWARD");
+      }
+      if(outBack.contains(pointerCheckedForNull.name()) && localIdentifier.contains(pointerCheckedForNull.name())) {
+        //Uncomment this  to enable backward analysis
+        //ctx.reportIssue(element, "This check is either always false, or a null pointer has been raised before. BACKWARD");
       }
     }
   }
