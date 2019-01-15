@@ -434,7 +434,26 @@ public class KotlinConverterTest {
     MemberSelect memberSelect = (MemberSelect)functionInvocationTree.methodSelect();
     assertTree(memberSelect.identifier()).isIdentifier("foo");
     assertTree(memberSelect.expression()).isInstanceOf(MemberSelect.class);
-    System.out.println(TreePrinter.table(tree));
+  }
+
+  @Test
+  public void testFunctionInvocation4() {
+    Tree tree = kotlinStatement("A.(foo)()");
+    assertThat(tree).isInstanceOf(NativeTree.class);
+    Tree tree2 = kotlinStatement("(A.foo)()");
+    assertThat(tree2).isInstanceOf(FunctionInvocationTree.class);
+    FunctionInvocationTree functionInvocationTree2 = (FunctionInvocationTree)tree2;
+    assertTree(functionInvocationTree2.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree2.methodSelect()).isInstanceOf(ParenthesizedExpressionTree.class);
+
+    Tree tree3 = kotlinStatement("(A).foo()");
+    assertThat(tree3).isInstanceOf(FunctionInvocationTree.class);
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree)tree3;
+    assertTree(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(MemberSelect.class);
+    MemberSelect memberSelect = (MemberSelect)functionInvocationTree.methodSelect();
+    assertTree(memberSelect.identifier()).isInstanceOf(IdentifierTree.class);
+    assertTree(memberSelect.expression()).isInstanceOf(ParenthesizedExpressionTree.class);
   }
 
   @Test

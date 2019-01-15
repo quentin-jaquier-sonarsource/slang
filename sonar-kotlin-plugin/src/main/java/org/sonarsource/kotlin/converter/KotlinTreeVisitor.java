@@ -265,14 +265,12 @@ class KotlinTreeVisitor {
   }
 
   private Tree createFunctionInvocation(TreeMetaData metaData, KtCallExpression callExpression) {
-    IdentifierTree memberSelect;
     if(callExpression.getCalleeExpression() != null) {
-      memberSelect = (IdentifierTree) createElement(callExpression.getCalleeExpression());
-    } else {
-      return convertElementToNative(callExpression, metaData);
+      Tree memberSelectTree = createElement(callExpression.getCalleeExpression());
+      List<Tree> args = list(callExpression.getTypeArguments().stream());
+      return new FunctionInvocationTreeImpl(metaData, memberSelectTree, args);
     }
-    List<Tree> args = list(callExpression.getTypeArguments().stream());
-    return new FunctionInvocationTreeImpl(metaData, memberSelect, args);
+    return convertElementToNative(callExpression, metaData);
   }
 
   private Tree createMemberSelect(TreeMetaData metaData, KtDotQualifiedExpression ktDotQualifiedExpression) {
@@ -284,9 +282,12 @@ class KotlinTreeVisitor {
       if(callExpression.getCalleeExpression() == null){
         return convertElementToNative(callExpression, metaData);
       } else {
-        IdentifierTree name = (IdentifierTree) createElement(callExpression.getCalleeExpression());
-        List<Tree> args = list(callExpression.getTypeArguments().stream());
-        return new FunctionInvocationTreeImpl(getTreeMetaData(callExpression), new MemberSelectImpl(metaData, memberSelect, name), args);
+        Tree nameTree = createElement(callExpression.getCalleeExpression());
+        if(nameTree instanceof IdentifierTree) {
+          IdentifierTree name = (IdentifierTree) nameTree;
+          List<Tree> args = list(callExpression.getTypeArguments().stream());
+          return new FunctionInvocationTreeImpl(getTreeMetaData(callExpression), new MemberSelectImpl(metaData, memberSelect, name), args);
+        }
       }
     } else if(ktDotQualifiedExpression.getSelectorExpression() instanceof KtNameReferenceExpression) {
       KtNameReferenceExpression nameRef = (KtNameReferenceExpression) ktDotQualifiedExpression.getSelectorExpression();
