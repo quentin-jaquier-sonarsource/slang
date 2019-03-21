@@ -22,7 +22,7 @@ package org.sonarsource.slang.cfg;
 import java.util.HashMap;
 import java.util.Map;
 
-class CfgPrinter {
+public class CfgPrinter {
 
   private CfgPrinter() {
     // this is an utility class and should not be instantiated

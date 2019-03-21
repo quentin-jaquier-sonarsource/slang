@@ -59,6 +59,7 @@ import org.sonarsource.slang.impl.ClassDeclarationTreeImpl;
 import org.sonarsource.slang.impl.CommentImpl;
 import org.sonarsource.slang.impl.ExceptionHandlingTreeImpl;
 import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
+import org.sonarsource.slang.impl.FunctionInvocationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
 import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.ImportDeclarationTreeImpl;
@@ -68,6 +69,7 @@ import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
 import org.sonarsource.slang.impl.MatchCaseTreeImpl;
 import org.sonarsource.slang.impl.MatchTreeImpl;
+import org.sonarsource.slang.impl.MemberSelectImpl;
 import org.sonarsource.slang.impl.ModifierTreeImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
 import org.sonarsource.slang.impl.PackageDeclarationTreeImpl;
@@ -321,14 +323,30 @@ public class SLangConverter implements ASTConverter {
 
     @Override
     public Tree visitMethodInvocation(SLangParser.MethodInvocationContext ctx) {
+      Tree methodSelectTree = visit(ctx.memberSelect());
       SLangParser.ArgumentListContext argumentListContext = ctx.argumentList();
-      List<Tree> children = new ArrayList<>();
-      children.add(visit(ctx.methodName()));
+
+      List<Tree> args = new ArrayList<>();
       if (argumentListContext != null) {
-        children.addAll(list(argumentListContext.statement()));
+        args.addAll(list(argumentListContext.statement()));
       }
 
-      return new NativeTreeImpl(meta(ctx), new SNativeKind(ctx), children);
+      return new FunctionInvocationTreeImpl(meta(ctx), methodSelectTree, args);
+    }
+
+    @Override
+    public Tree visitMemberSelect(SLangParser.MemberSelectContext ctx) {
+      if(ctx.identifier().size() == 1){
+        return visit(ctx.identifier(0));
+      }
+      int i = 0;
+      Tree t = visit(ctx.identifier(0));
+      while(i < ctx.identifier().size()) {
+        SLangParser.IdentifierContext currentId = ctx.identifier(i);
+        t = new MemberSelectImpl(meta(currentId), t, (IdentifierTree) visit(currentId));
+        i++;
+      }
+      return t;
     }
 
     @Override

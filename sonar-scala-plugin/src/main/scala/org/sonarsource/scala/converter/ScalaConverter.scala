@@ -24,11 +24,12 @@ import java.util.Collections.{emptyList, singletonList}
 
 import org.sonarsource.slang
 import org.sonarsource.slang.api
-import org.sonarsource.slang.api.{BinaryExpressionTree, IdentifierTree, TextRange, Token, TreeMetaData, UnaryExpressionTree, CatchTree}
+import org.sonarsource.slang.api.{BinaryExpressionTree, CatchTree, IdentifierTree, TextRange, Token, TreeMetaData, UnaryExpressionTree}
 import org.sonarsource.slang.api.LoopTree.LoopKind
 import org.sonarsource.slang.impl._
 
 import scala.collection.JavaConverters._
+import scala.meta.Term.Select
 import scala.meta._
 import scala.meta.internal.tokenizers.keywords
 import scala.meta.tokens.Token.{CR, Comment, LF, Space, Tab}
@@ -160,6 +161,12 @@ class ScalaConverter extends slang.api.ASTConverter {
           new ModifierTreeImpl(metaData, slang.api.ModifierTree.Kind.OVERRIDE)
         case Term.Return(expr) =>
           createReturnTree(metaData, expr)
+        case Term.Apply(fun, args) =>
+          new FunctionInvocationTreeImpl(metaData,
+            convert(fun),
+            args.map(convert).asJava)
+        case Select(expr, id) =>
+          new MemberSelectImpl(metaData, convert(expr), convert(id).asInstanceOf[slang.api.IdentifierTree]);
         case _ =>
           createNativeTree(metaData, metaTree)
       }

@@ -32,6 +32,7 @@ import org.sonarsource.slang.api.ClassDeclarationTree;
 import org.sonarsource.slang.api.Comment;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
+import org.sonarsource.slang.api.FunctionInvocationTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.ImportDeclarationTree;
@@ -41,6 +42,7 @@ import org.sonarsource.slang.api.LiteralTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.MatchCaseTree;
 import org.sonarsource.slang.api.MatchTree;
+import org.sonarsource.slang.api.MemberSelect;
 import org.sonarsource.slang.api.ModifierTree;
 import org.sonarsource.slang.api.NativeTree;
 import org.sonarsource.slang.api.PackageDeclarationTree;
@@ -56,6 +58,7 @@ import org.sonarsource.slang.api.Tree;
 import org.sonarsource.slang.api.VariableDeclarationTree;
 import org.sonarsource.slang.impl.ModifierTreeImpl;
 import org.sonarsource.slang.parser.SLangConverter;
+import org.sonarsource.slang.visitors.TreePrinter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.sonarsource.slang.api.BinaryExpressionTree.Operator.LESS_THAN;
@@ -400,8 +403,57 @@ public class KotlinConverterTest {
 
   @Test
   public void testFunctionInvocation() {
-    Tree tree = kotlinStatement("foo(\"Hello world!\")");
+    Tree tree = kotlinStatement("foo()");
+    assertThat(tree).isInstanceOf(FunctionInvocationTree.class);
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree)tree;
+    assertTree(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isIdentifier("foo");
+  }
+
+  @Test
+  public void testFunctionInvocation2() {
+    Tree tree = kotlinStatement("A.foo()");
+    assertThat(tree).isInstanceOf(FunctionInvocationTree.class);
+
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree)tree;
+    assertTree(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(MemberSelect.class);
+    MemberSelect memberSelect = (MemberSelect)functionInvocationTree.methodSelect();
+    assertTree(memberSelect.identifier()).isIdentifier("foo");
+    assertTree(memberSelect.expression()).isIdentifier("A");
+  }
+
+  @Test
+  public void testFunctionInvocation3() {
+    Tree tree = kotlinStatement("A.B.foo()");
+    assertThat(tree).isInstanceOf(FunctionInvocationTree.class);
+
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree)tree;
+    assertTree(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(MemberSelect.class);
+    MemberSelect memberSelect = (MemberSelect)functionInvocationTree.methodSelect();
+    assertTree(memberSelect.identifier()).isIdentifier("foo");
+    assertTree(memberSelect.expression()).isInstanceOf(MemberSelect.class);
+  }
+
+  @Test
+  public void testFunctionInvocation4() {
+    Tree tree = kotlinStatement("A.(foo)()");
     assertThat(tree).isInstanceOf(NativeTree.class);
+    Tree tree2 = kotlinStatement("(A.foo)()");
+    assertThat(tree2).isInstanceOf(FunctionInvocationTree.class);
+    FunctionInvocationTree functionInvocationTree2 = (FunctionInvocationTree)tree2;
+    assertTree(functionInvocationTree2.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree2.methodSelect()).isInstanceOf(ParenthesizedExpressionTree.class);
+
+    Tree tree3 = kotlinStatement("(A).foo()");
+    assertThat(tree3).isInstanceOf(FunctionInvocationTree.class);
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree)tree3;
+    assertTree(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(MemberSelect.class);
+    MemberSelect memberSelect = (MemberSelect)functionInvocationTree.methodSelect();
+    assertTree(memberSelect.identifier()).isInstanceOf(IdentifierTree.class);
+    assertTree(memberSelect.expression()).isInstanceOf(ParenthesizedExpressionTree.class);
   }
 
   @Test
@@ -756,7 +808,7 @@ public class KotlinConverterTest {
     assertThat(tree).isInstanceOf(ThrowTree.class);
     ThrowTree throwTree = (ThrowTree) tree;
     assertThat(throwTree.keyword().text()).isEqualTo("throw");
-    assertTree(throwTree.body()).isInstanceOf(NativeTree.class);
+    assertTree(throwTree.body()).isInstanceOf(FunctionInvocationTree.class);
   }
 
 

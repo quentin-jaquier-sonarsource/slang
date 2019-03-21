@@ -33,6 +33,7 @@ import org.sonarsource.slang.api.ClassDeclarationTree;
 import org.sonarsource.slang.api.Comment;
 import org.sonarsource.slang.api.ExceptionHandlingTree;
 import org.sonarsource.slang.api.FunctionDeclarationTree;
+import org.sonarsource.slang.api.FunctionInvocationTree;
 import org.sonarsource.slang.api.IdentifierTree;
 import org.sonarsource.slang.api.IfTree;
 import org.sonarsource.slang.api.ImportDeclarationTree;
@@ -41,6 +42,7 @@ import org.sonarsource.slang.api.JumpTree;
 import org.sonarsource.slang.api.LiteralTree;
 import org.sonarsource.slang.api.LoopTree;
 import org.sonarsource.slang.api.MatchTree;
+import org.sonarsource.slang.api.MemberSelect;
 import org.sonarsource.slang.api.ModifierTree;
 import org.sonarsource.slang.api.NativeTree;
 import org.sonarsource.slang.api.PackageDeclarationTree;
@@ -585,6 +587,13 @@ public class SLangConverterTest {
   @Test
   public void methodInvocations() {
     Tree functionInvocationNoArgument = converter.parse("function();");
+    assertTree(functionInvocationNoArgument.children().get(0)).isInstanceOf(FunctionInvocationTree.class);
+
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree) functionInvocationNoArgument.children().get(0);
+    assertThat(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(IdentifierTree.class);;
+
+
     assertTree(functionInvocationNoArgument).isEquivalentTo(functionInvocationNoArgument);
     assertTree(functionInvocationNoArgument).isEquivalentTo(converter.parse("function();"));
     assertTree(functionInvocationNoArgument).isNotEquivalentTo(converter.parse("function2();"));
@@ -595,6 +604,24 @@ public class SLangConverterTest {
 
     assertThat(functionInvocationNoArgument.descendants()
       .anyMatch(e -> e instanceof IdentifierTree && ((IdentifierTree) e).name().equals("function"))).isTrue();
+  }
+
+  @Test
+  public void methodSelectInvocations() {
+    Tree functionInvocationNoArgument = converter.parse("A.B.function();");
+    assertTree(functionInvocationNoArgument.children().get(0)).isInstanceOf(FunctionInvocationTree.class);
+
+    FunctionInvocationTree functionInvocationTree = (FunctionInvocationTree) functionInvocationNoArgument.children().get(0);
+
+    assertThat(functionInvocationTree.methodSelect()).isNotNull();
+    assertTree(functionInvocationTree.methodSelect()).isInstanceOf(MemberSelect.class);
+    assertThat(((MemberSelect)functionInvocationTree.methodSelect()).identifier().name()).isEqualTo("function");
+
+    assertTree(functionInvocationNoArgument).isEquivalentTo(functionInvocationNoArgument);
+    assertTree(functionInvocationNoArgument).isNotEquivalentTo(converter.parse("function();"));
+
+    assertThat(functionInvocationNoArgument.descendants()
+        .anyMatch(e -> e instanceof IdentifierTree && ((IdentifierTree) e).name().equals("function"))).isTrue();
   }
 
   @Test

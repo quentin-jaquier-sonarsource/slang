@@ -1,0 +1,118 @@
+AST node class                               | first…last tokens       | line:col     
+---------------------------------------------|-------------------------|--------------
+TopLevelTree {                               | public … }              | 20:1 … 48:1  
+  ClassDeclarationTree {                     | public … }              | 20:1 … 46:2  
+    ?CLASS? {                                | public … }              | 21:3 … 45:4  
+      FunctionDeclarationTree {              | public … }              | 21:3 … 33:4  
+        IdentifierTree                       | t                       | 21:15 … 21:16
+        VariableDeclarationTree {            | int … i                 | 21:17 … 21:22
+          IdentifierTree                     | i                       | 21:21 … 21:22
+        }                                    |                         |              
+        BlockTree {                          | { … }                   | 21:24 … 33:4 
+          VariableDeclarationTree {          | int … ;                 | 22:5 … 22:15 
+            IdentifierTree                   | a                       | 22:9 … 22:10 
+            LiteralTree                      | 1                       | 22:13 … 22:14
+          }                                  |                         |              
+          ExceptionHandlingTree {            | try … }                 | 23:5 … 32:6  
+            BlockTree {                      | { … }                   | 23:8 … 28:6  
+              IfTree {                       | if … }                  | 24:7 … 26:8  
+                BinaryExpressionTree {       | i … 2                   | 24:10 … 24:16
+                  IdentifierTree             | i                       | 24:10 … 24:11
+                  LiteralTree                | 2                       | 24:15 … 24:16
+                }                            |                         |              
+                BlockTree {                  | { … }                   | 24:18 … 26:8 
+                  ThrowTree {                | throw … ;               | 25:9 … 25:49 
+                    ?NEW_CLASS? {            | IllegalArg … "a"        | 25:19 … 25:47
+                      IdentifierTree         | IllegalArgu…ntException | 25:19 … 25:43
+                      ?ARGUMENTS? {          | "a"                     | 25:44 … 25:47
+                        LiteralTree          | "a"                     | 25:44 … 25:47
+                      }                      |                         |              
+                    }                        |                         |              
+                  }                          |                         |              
+                }                            |                         |              
+              }                              |                         |              
+              ?EXPRESSION_STATEMENT? {       | a … 2                   | 27:7 … 27:12 
+                AssignmentExpressionTree {   | a … 2                   | 27:7 … 27:12 
+                  IdentifierTree             | a                       | 27:7 … 27:8  
+                  LiteralTree                | 2                       | 27:11 … 27:12
+                }                            |                         |              
+              }                              |                         |              
+            }                                |                         |              
+            CatchTree {                      | catch … }               | 28:7 … 30:6  
+              VariableDeclarationTree {      | Exception … e           | 28:14 … 28:25
+                IdentifierTree               | e                       | 28:24 … 28:25
+              }                              |                         |              
+              BlockTree {                    | { … }                   | 28:27 … 30:6 
+                ?EXPRESSION_STATEMENT? {     | a … 3                   | 29:7 … 29:12 
+                  AssignmentExpressionTree { | a … 3                   | 29:7 … 29:12 
+                    IdentifierTree           | a                       | 29:7 … 29:8  
+                    LiteralTree              | 3                       | 29:11 … 29:12
+                  }                          |                         |              
+                }                            |                         |              
+              }                              |                         |              
+            }                                |                         |              
+            BlockTree {                      | { … }                   | 30:15 … 32:6 
+              ?EXPRESSION_STATEMENT? {       | a … 4                   | 31:7 … 31:12 
+                AssignmentExpressionTree {   | a … 4                   | 31:7 … 31:12 
+                  IdentifierTree             | a                       | 31:7 … 31:8  
+                  LiteralTree                | 4                       | 31:11 … 31:12
+                }                            |                         |              
+              }                              |                         |              
+            }                                |                         |              
+          }                                  |                         |              
+        }                                    |                         |              
+      }                                      |                         |              
+      FunctionDeclarationTree {              | public … }              | 35:3 … 45:4  
+        IdentifierTree                       | t1                      | 35:15 … 35:17
+        VariableDeclarationTree {            | int … i                 | 35:18 … 35:23
+          IdentifierTree                     | i                       | 35:22 … 35:23
+        }                                    |                         |              
+        BlockTree {                          | { … }                   | 35:25 … 45:4 
+          VariableDeclarationTree {          | int … ;                 | 36:5 … 36:15 
+            IdentifierTree                   | a                       | 36:9 … 36:10 
+            LiteralTree                      | 1                       | 36:13 … 36:14
+          }                                  |                         |              
+          ExceptionHandlingTree {            | try … }                 | 37:5 … 44:6  
+            BlockTree {                      | { … }                   | 37:8 … 42:6  
+              IfTree {                       | if … }                  | 38:7 … 40:8  
+                BinaryExpressionTree {       | i … 2                   | 38:10 … 38:16
+                  IdentifierTree             | i                       | 38:10 … 38:11
+                  LiteralTree                | 2                       | 38:15 … 38:16
+                }                            |                         |              
+                BlockTree {                  | { … }                   | 38:18 … 40:8 
+                  ThrowTree {                | throw … ;               | 39:9 … 39:49 
+                    ?NEW_CLASS? {            | IllegalArg … "a"        | 39:19 … 39:47
+                      IdentifierTree         | IllegalArgu…ntException | 39:19 … 39:43
+                      ?ARGUMENTS? {          | "a"                     | 39:44 … 39:47
+                        LiteralTree          | "a"                     | 39:44 … 39:47
+                      }                      |                         |              
+                    }                        |                         |              
+                  }                          |                         |              
+                }                            |                         |              
+              }                              |                         |              
+              ?EXPRESSION_STATEMENT? {       | a … 2                   | 41:7 … 41:12 
+                AssignmentExpressionTree {   | a … 2                   | 41:7 … 41:12 
+                  IdentifierTree             | a                       | 41:7 … 41:8  
+                  LiteralTree                | 2                       | 41:11 … 41:12
+                }                            |                         |              
+              }                              |                         |              
+            }                                |                         |              
+            CatchTree {                      | catch … }               | 42:7 … 44:6  
+              VariableDeclarationTree {      | Exception … e           | 42:14 … 42:25
+                IdentifierTree               | e                       | 42:24 … 42:25
+              }                              |                         |              
+              BlockTree {                    | { … }                   | 42:27 … 44:6 
+                ?EXPRESSION_STATEMENT? {     | a … 3                   | 43:7 … 43:12 
+                  AssignmentExpressionTree { | a … 3                   | 43:7 … 43:12 
+                    IdentifierTree           | a                       | 43:7 … 43:8  
+                    LiteralTree              | 3                       | 43:11 … 43:12
+                  }                          |                         |              
+                }                            |                         |              
+              }                              |                         |              
+            }                                |                         |              
+          }                                  |                         |              
+        }                                    |                         |              
+      }                                      |                         |              
+    }                                        |                         |              
+  }                                          |                         |              
+}                                            |                         |              

@@ -68,6 +68,7 @@ import org.sonarsource.slang.impl.CatchTreeImpl;
 import org.sonarsource.slang.impl.ClassDeclarationTreeImpl;
 import org.sonarsource.slang.impl.ExceptionHandlingTreeImpl;
 import org.sonarsource.slang.impl.FunctionDeclarationTreeImpl;
+import org.sonarsource.slang.impl.FunctionInvocationTreeImpl;
 import org.sonarsource.slang.impl.IdentifierTreeImpl;
 import org.sonarsource.slang.impl.IfTreeImpl;
 import org.sonarsource.slang.impl.IntegerLiteralTreeImpl;
@@ -76,6 +77,7 @@ import org.sonarsource.slang.impl.LiteralTreeImpl;
 import org.sonarsource.slang.impl.LoopTreeImpl;
 import org.sonarsource.slang.impl.MatchCaseTreeImpl;
 import org.sonarsource.slang.impl.MatchTreeImpl;
+import org.sonarsource.slang.impl.MemberSelectImpl;
 import org.sonarsource.slang.impl.NativeTreeImpl;
 import org.sonarsource.slang.impl.ParameterTreeImpl;
 import org.sonarsource.slang.impl.ParenthesizedExpressionTreeImpl;
@@ -211,6 +213,8 @@ public class RubyVisitor {
       case "true":
       case "false":
         return new LiteralTreeImpl(metaData(node), node.type());
+      case "nil":
+        return new LiteralTreeImpl(metaData(node), "null");
       case "when":
         return createCaseTree(node, children);
       case "str":
@@ -654,6 +658,14 @@ public class RubyVisitor {
         return new BinaryExpressionTreeImpl(metaData(node), BINARY_OPERATOR_MAP.get(calleeSymbol), operatorToken, left, right);
       } else if ("raise".equals(calleeSymbol)) {
         return createThrowTree(node, children);
+      } else if(children.get(0) != null) {
+        Tree methodSelect = (Tree) children.get(0);
+        IdentifierTree name = identifierFromSymbol(node, (RubySymbol) children.get(1));
+        List<Tree> arguments = new ArrayList<>();
+        for(int i = 2; i < children.size(); i++){
+          arguments.add((Tree) children.get(i));
+        }
+        return new FunctionInvocationTreeImpl(metaData(node), new MemberSelectImpl(metaData(node), methodSelect, name), arguments);
       }
     }
 

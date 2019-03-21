@@ -1,0 +1,79 @@
+AST node class                            | first…last tokens | line:col     
+------------------------------------------|-------------------|--------------
+TopLevelTree {                            | public … }        | 20:1 … 38:1  
+  ClassDeclarationTree {                  | public … }        | 20:1 … 36:2  
+    ?CLASS? {                             | public … }        | 21:3 … 35:4  
+      FunctionDeclarationTree {           | public … }        | 21:3 … 35:4  
+        IdentifierTree                    | t                 | 21:15 … 21:16
+        VariableDeclarationTree {         | int … i           | 21:17 … 21:22
+          IdentifierTree                  | i                 | 21:21 … 21:22
+        }                                 |                   |              
+        BlockTree {                       | { … }             | 21:24 … 35:4 
+          VariableDeclarationTree {       | int … ;           | 22:5 … 22:27 
+            IdentifierTree                | a                 | 22:11 … 22:12
+            ?NEW_ARRAY? {                 | int … 12          | 22:19 … 22:25
+              ?PRIMITIVE_TYPE?            | int               | 22:19 … 22:22
+              ?ARRAY_DIMENSION? {         | 12                | 22:23 … 22:25
+                LiteralTree               | 12                | 22:23 … 22:25
+              }                           |                   |              
+            }                             |                   |              
+          }                               |                   |              
+          ?EXPRESSION_STATEMENT? {        | a … 10            | 24:5 … 24:14 
+            AssignmentExpressionTree {    | a … 10            | 24:5 … 24:14 
+              ?ARRAY_ACCESS_EXPRESSION? { | a … 1             | 24:5 … 24:8  
+                IdentifierTree            | a                 | 24:5 … 24:6  
+                ?ARRAY_DIMENSION? {       | 1                 | 24:7 … 24:8  
+                  LiteralTree             | 1                 | 24:7 … 24:8  
+                }                         |                   |              
+              }                           |                   |              
+              LiteralTree                 | 10                | 24:12 … 24:14
+            }                             |                   |              
+          }                               |                   |              
+          VariableDeclarationTree {       | int … ;           | 26:5 … 26:20 
+            IdentifierTree                | ii                | 26:9 … 26:11 
+            ?ARRAY_ACCESS_EXPRESSION? {   | a … 11            | 26:14 … 26:18
+              IdentifierTree              | a                 | 26:14 … 26:15
+              ?ARRAY_DIMENSION? {         | 11                | 26:16 … 26:18
+                LiteralTree               | 11                | 26:16 … 26:18
+              }                           |                   |              
+            }                             |                   |              
+          }                               |                   |              
+          VariableDeclarationTree {       | int … ;           | 28:5 … 28:22 
+            IdentifierTree                | k                 | 28:9 … 28:10 
+            MemberSelect {                | a … length        | 28:13 … 28:21
+              IdentifierTree              | a                 | 28:13 … 28:14
+              IdentifierTree              | length            | 28:15 … 28:21
+            }                             |                   |              
+          }                               |                   |              
+          VariableDeclarationTree {       | boolean … ;       | 30:5 … 30:28 
+            IdentifierTree                | bb                | 30:13 … 30:15
+            BinaryExpressionTree {        | a … null          | 30:18 … 30:27
+              IdentifierTree              | a                 | 30:18 … 30:19
+              LiteralTree                 | null              | 30:23 … 30:27
+            }                             |                   |              
+          }                               |                   |              
+          ?EXPRESSION_STATEMENT? {        | a … 10            | 32:5 … 32:14 
+            AssignmentExpressionTree {    | a … 10            | 32:5 … 32:14 
+              ?ARRAY_ACCESS_EXPRESSION? { | a … 1             | 32:5 … 32:8  
+                IdentifierTree            | a                 | 32:5 … 32:6  
+                ?ARRAY_DIMENSION? {       | 1                 | 32:7 … 32:8  
+                  LiteralTree             | 1                 | 32:7 … 32:8  
+                }                         |                   |              
+              }                           |                   |              
+              LiteralTree                 | 10                | 32:12 … 32:14
+            }                             |                   |              
+          }                               |                   |              
+          VariableDeclarationTree {       | int … ;           | 34:5 … 34:19 
+            IdentifierTree                | j                 | 34:9 … 34:10 
+            ?ARRAY_ACCESS_EXPRESSION? {   | a … 11            | 34:13 … 34:17
+              IdentifierTree              | a                 | 34:13 … 34:14
+              ?ARRAY_DIMENSION? {         | 11                | 34:15 … 34:17
+                LiteralTree               | 11                | 34:15 … 34:17
+              }                           |                   |              
+            }                             |                   |              
+          }                               |                   |              
+        }                                 |                   |              
+      }                                   |                   |              
+    }                                     |                   |              
+  }                                       |                   |              
+}                                         |                   |              

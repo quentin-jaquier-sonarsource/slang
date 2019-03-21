@@ -1,0 +1,68 @@
+/*
+ * SonarSource SLang
+ * Copyright (C) 2009-2018 SonarSource SA
+ * mailto:info AT sonarsource DOT com
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+package org.sonarsource.scala.converter;
+
+import org.junit.Test;
+import org.sonarsource.slang.api.FunctionDeclarationTree;
+import org.sonarsource.slang.api.FunctionInvocationTree;
+import org.sonarsource.slang.api.MemberSelect;
+import org.sonarsource.slang.api.NativeTree;
+import org.sonarsource.slang.api.Tree;
+import org.sonarsource.slang.cfg.ControlFlowGraph;
+
+import static junit.framework.TestCase.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.sonarsource.slang.testing.TreeAssert.assertTree;
+
+public class FunctionInvocationTreeTest extends AbstractScalaConverterTest {
+  
+  @Test
+  public void fun_Invocation() {
+    Tree tree = scalaStatement("p.toString()");
+    FunctionInvocationTree fTree = (FunctionInvocationTree) tree;
+    assertThat(fTree.arguments()).isEmpty();
+    assertTrue(fTree.methodSelect() instanceof MemberSelect);
+    MemberSelect memberSelect = (MemberSelect) fTree.methodSelect();
+    assertTree(memberSelect.expression()).isIdentifier("p");
+    assertTree(memberSelect.identifier()).isIdentifier("toString");
+  }
+
+  @Test
+  public void fun_invocation_no_select() {
+    Tree tree = scalaStatement("toString()");
+    FunctionInvocationTree fTree = (FunctionInvocationTree) tree;
+    assertThat(fTree.arguments()).isEmpty();
+    assertTree(fTree.methodSelect()).isIdentifier("toString");
+  }
+
+  @Test
+  public void fun_invocation_chained_select() {
+    Tree tree = scalaStatement("A.B.toString()");
+    FunctionInvocationTree fTree = (FunctionInvocationTree) tree;
+    assertThat(fTree.arguments()).isEmpty();
+    assertTrue(fTree.methodSelect() instanceof MemberSelect);
+    MemberSelect memberSelect = (MemberSelect) fTree.methodSelect();
+    assertTree(memberSelect.identifier()).isIdentifier("toString");
+    assertTrue(memberSelect.expression() instanceof MemberSelect);
+    MemberSelect nestedMemberSelect = (MemberSelect) memberSelect.expression();
+    assertTree(nestedMemberSelect.expression()).isIdentifier("A");
+    assertTree(nestedMemberSelect.identifier()).isIdentifier("B");
+  }
+}

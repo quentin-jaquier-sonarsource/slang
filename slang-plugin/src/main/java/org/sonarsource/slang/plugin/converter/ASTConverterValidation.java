@@ -84,8 +84,10 @@ public class ASTConverterValidation implements ASTConverter {
   @Override
   public Tree parse(String content) {
     Tree tree = wrapped.parse(content);
-    assertTreeIsValid(tree);
-    assertTokensMatchSourceCode(tree, content);
+    if(tree.metaData() != null) {
+      assertTreeIsValid(tree);
+      assertTokensMatchSourceCode(tree, content);
+    }
     return tree;
   }
 

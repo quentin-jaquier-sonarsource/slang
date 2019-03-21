@@ -24,7 +24,7 @@ package org.sonarsource.slang.checks.utils;
  * language agnostic module
  */
 public enum Language {
-  KOTLIN, RUBY, SCALA;
+  KOTLIN, RUBY, SCALA, SJAVA;
 
   public static final String RUBY_NAMING_DEFAULT = "^(@{0,2}[\\da-z_]+[!?=]?)|([*+-/%=!><~]+)|(\\[]=?)$";
 
